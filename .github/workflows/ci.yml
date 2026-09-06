@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ecommerce:ecommerce_password@localhost:5432/ecommerce_db?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-change-me-32-characters
+      JWT_REFRESH_SECRET: ci-refresh-secret-change-me-32-characters
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+      STRIPE_CURRENCY: usd
+      RAZORPAY_KEY_ID: rzp_test_ci
+      RAZORPAY_KEY_SECRET: razorpay-ci-placeholder
+      RAZORPAY_WEBHOOK_SECRET: razorpay-webhook-ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npx prisma validate --schema prisma/schema.prisma
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

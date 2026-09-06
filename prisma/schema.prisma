@@ -1,0 +1,234 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  CANCELED
+  FAILED
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cart         Cart?
+  orders       Order[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  description String?
+  parentId    String?   @map("parent_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  category       Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  inventoryItems InventoryItem[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model InventoryItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  productId   String   @map("product_id") @db.Uuid
+  sku         String   @unique
+  stockCount  Int      @default(0) @map("stock_count")
+  priceCents  Int      @map("price_cents")
+  currency    String   @default("USD") @db.VarChar(3)
+  reserved    Int      @default(0)
+  attributes  Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("inventory_items")
+}
+
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  cartId          String   @map("cart_id") @db.Uuid
+  productId       String   @map("product_id") @db.Uuid
+  inventoryItemId String   @map("inventory_item_id") @db.Uuid
+  quantity        Int
+  unitPriceCents  Int      @map("unit_price_cents")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  cart          Cart          @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, inventoryItemId])
+  @@index([productId])
+  @@index([inventoryItemId])
+  @@map("cart_items")
+}
+
+model Order {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @map("user_id") @db.Uuid
+  status      OrderStatus @default(PENDING)
+  totalCents  Int         @map("total_cents")
+  currency    String      @default("USD") @db.VarChar(3)
+  placedAt    DateTime    @default(now()) @map("placed_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items        OrderItem[]
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  orderId         String   @map("order_id") @db.Uuid
+  productId       String   @map("product_id") @db.Uuid
+  inventoryItemId String   @map("inventory_item_id") @db.Uuid
+  sku             String
+  name            String
+  quantity        Int
+  unitPriceCents  Int      @map("unit_price_cents")
+  lineTotalCents  Int      @map("line_total_cents")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([inventoryItemId])
+  @@map("order_items")
+}
+
+model Transaction {
+  id                    String            @id @default(uuid()) @db.Uuid
+  orderId               String            @map("order_id") @db.Uuid
+  userId                String            @map("user_id") @db.Uuid
+  type                  TransactionType   @default(PAYMENT)
+  status                PaymentStatus
+  amountCents           Int               @map("amount_cents")
+  currency              String            @default("USD") @db.VarChar(3)
+  provider              String?
+  providerOrderId       String?           @unique @map("provider_order_id")
+  stripePaymentIntentId String?           @unique @map("stripe_payment_intent_id")
+  razorpayPaymentId     String?           @unique @map("razorpay_payment_id")
+  idempotencyKey        String            @unique @map("idempotency_key")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  paymentLogs PaymentLog[]
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@map("transactions")
+}
+
+model PaymentLog {
+  id                    String        @id @default(uuid()) @db.Uuid
+  transactionId         String?       @map("transaction_id") @db.Uuid
+  provider              String
+  providerEventId       String?       @unique @map("provider_event_id")
+  providerOrderId       String?       @map("provider_order_id")
+  stripePaymentIntentId String?       @map("stripe_payment_intent_id")
+  razorpayPaymentId     String?       @map("razorpay_payment_id")
+  idempotencyKey        String?       @map("idempotency_key")
+  status                PaymentStatus
+  providerEventType     String?       @map("provider_event_type")
+  payload               Json
+  createdAt             DateTime      @default(now()) @map("created_at")
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([transactionId])
+  @@index([providerOrderId])
+  @@index([stripePaymentIntentId])
+  @@index([razorpayPaymentId])
+  @@index([idempotencyKey])
+  @@unique([provider, idempotencyKey])
+  @@map("payment_logs")
+}
