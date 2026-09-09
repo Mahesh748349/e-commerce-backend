@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   api,
@@ -17,18 +18,23 @@ export function AdminPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("AdminPassword123!");
-  const [categoryName, setCategoryName] = useState("New Category");
-  const [productName, setProductName] = useState("New Product");
-  const [sku, setSku] = useState("NEW-SKU-001");
-  const [stockCount, setStockCount] = useState(10);
-  const [priceCents, setPriceCents] = useState(4999);
-  const [message, setMessage] = useState("Sign in with an admin account.");
+  const [categoryName, setCategoryName] = useState("Accessories");
+  const [productName, setProductName] = useState("Travel Backpack");
+  const [sku, setSku] = useState("BAG-BLK-STD");
+  const [stockCount, setStockCount] = useState(12);
+  const [priceCents, setPriceCents] = useState(7999);
+  const [message, setMessage] = useState("Sign in with the seeded admin account.");
   const [loading, setLoading] = useState(false);
 
   async function login() {
     setLoading(true);
     try {
       const nextSession = await api.login(email, password);
+      if (nextSession.user.role !== "ADMIN") {
+        setMessage("This page requires an ADMIN account.");
+        return;
+      }
+
       setSession(nextSession);
       setMessage(`Signed in as ${nextSession.user.email}.`);
       await refreshAdminData(nextSession.tokens.accessToken);
@@ -67,7 +73,7 @@ export function AdminPage() {
         description: `${categoryName} catalog group`
       });
       await refreshAdminData();
-      setMessage("Category created.");
+      setMessage("Category created in PostgreSQL.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create category.");
     } finally {
@@ -76,21 +82,26 @@ export function AdminPage() {
   }
 
   async function createProduct() {
-    if (!session || !categories[0]) {
-      setMessage("Create a category first.");
+    if (!session) {
+      return;
+    }
+
+    const categoryId = categories[0]?.id;
+    if (!categoryId) {
+      setMessage("Create or load a category before creating products.");
       return;
     }
 
     setLoading(true);
     try {
       await api.adminCreateProduct(session.tokens.accessToken, {
-        categoryId: categories[0].id,
+        categoryId,
         name: productName,
-        description: `${productName} description`,
+        description: `${productName} created from the admin console`,
         isActive: true
       });
       await refreshAdminData();
-      setMessage("Product created.");
+      setMessage("Product created in PostgreSQL.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create product.");
     } finally {
@@ -99,22 +110,27 @@ export function AdminPage() {
   }
 
   async function createInventory() {
-    if (!session || !products[0]) {
-      setMessage("Create a product first.");
+    if (!session) {
+      return;
+    }
+
+    const productId = products[0]?.id;
+    if (!productId) {
+      setMessage("Create or load a product before creating inventory.");
       return;
     }
 
     setLoading(true);
     try {
       await api.adminCreateInventory(session.tokens.accessToken, {
-        productId: products[0].id,
+        productId,
         sku,
         stockCount,
         priceCents,
         currency: "USD"
       });
       await refreshAdminData();
-      setMessage("Inventory item created.");
+      setMessage("Inventory SKU created in PostgreSQL.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create inventory.");
     } finally {
@@ -127,8 +143,17 @@ export function AdminPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Commerce Admin</p>
-          <h1>Catalog operations</h1>
+          <h1>Catalog and order operations</h1>
         </div>
+        <nav className="nav-actions">
+          <Link href="/">Storefront</Link>
+          <button className="secondary-button" onClick={() => refreshAdminData()} disabled={!session || loading}>
+            Refresh
+          </button>
+        </nav>
+      </header>
+
+      <section className="auth-strip">
         <div className="auth-panel">
           <input value={email} onChange={(event) => setEmail(event.target.value)} aria-label="Admin email" />
           <input
@@ -141,13 +166,16 @@ export function AdminPage() {
             Sign in
           </button>
         </div>
-      </header>
+        <div className="session-badge">
+          {session ? `${session.user.email} / ${session.user.role}` : "Not signed in"}
+        </div>
+      </section>
 
       <section className="status-line">{message}</section>
 
       <section className="admin-grid">
         <article className="admin-panel">
-          <h2>Category</h2>
+          <h2>Create Category</h2>
           <input value={categoryName} onChange={(event) => setCategoryName(event.target.value)} />
           <button onClick={createCategory} disabled={loading || !session}>
             Create category
@@ -155,7 +183,7 @@ export function AdminPage() {
         </article>
 
         <article className="admin-panel">
-          <h2>Product</h2>
+          <h2>Create Product</h2>
           <input value={productName} onChange={(event) => setProductName(event.target.value)} />
           <button onClick={createProduct} disabled={loading || !session}>
             Create product
@@ -163,7 +191,7 @@ export function AdminPage() {
         </article>
 
         <article className="admin-panel">
-          <h2>Inventory</h2>
+          <h2>Create Inventory</h2>
           <input value={sku} onChange={(event) => setSku(event.target.value)} />
           <input
             value={stockCount}
@@ -183,12 +211,43 @@ export function AdminPage() {
         </article>
       </section>
 
+      <section className="dashboard-grid">
+        <article className="admin-table">
+          <h2>Categories</h2>
+          {!categories.length ? <p>No categories loaded.</p> : null}
+          {categories.map((category) => (
+            <div className="data-row" key={category.id}>
+              <strong>{category.name}</strong>
+              <span>{category.slug}</span>
+            </div>
+          ))}
+        </article>
+
+        <article className="admin-table">
+          <h2>Products and SKUs</h2>
+          {!products.length ? <p>No products loaded.</p> : null}
+          {products.map((product) => (
+            <div className="data-row" key={product.id}>
+              <strong>{product.name}</strong>
+              <span>{product.inventoryItems.length} SKU(s)</span>
+              <span>
+                {product.inventoryItems[0]
+                  ? formatMoney(product.inventoryItems[0].priceCents, product.inventoryItems[0].currency)
+                  : "No inventory"}
+              </span>
+            </div>
+          ))}
+        </article>
+      </section>
+
       <section className="admin-table">
         <h2>Recent Orders</h2>
+        {!orders.length ? <p>No orders yet. Checkout from the storefront to create one.</p> : null}
         {orders.map((order) => (
           <div className="order-row" key={order.id}>
             <span>{order.user.email}</span>
             <strong>{order.status}</strong>
+            <span>{order.items.length} lines</span>
             <span>{formatMoney(order.totalCents, order.currency)}</span>
           </div>
         ))}

@@ -8,13 +8,7 @@ type ApiEnvelope<T> = {
   meta?: Record<string, unknown>;
 };
 
-export type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  inventoryItems: InventoryItem[];
-};
+type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "CANCELLED" | "FAILED";
 
 export type InventoryItem = {
   id: string;
@@ -23,6 +17,14 @@ export type InventoryItem = {
   priceCents: number;
   currency: string;
   attributes: Record<string, unknown> | null;
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  inventoryItems: InventoryItem[];
 };
 
 export type Cart = {
@@ -46,7 +48,7 @@ export type Category = {
 
 export type AdminOrder = {
   id: string;
-  status: "PENDING" | "PAID" | "SHIPPED" | "CANCELLED" | "FAILED";
+  status: OrderStatus;
   totalCents: number;
   currency: string;
   createdAt: string;
@@ -57,6 +59,21 @@ export type AdminOrder = {
     name: string;
     sku: string;
     quantity: number;
+  }>;
+};
+
+export type CustomerOrder = {
+  id: string;
+  status: OrderStatus;
+  totalCents: number;
+  currency: string;
+  createdAt: string;
+  items: Array<{
+    name: string;
+    sku: string;
+    quantity: number;
+    unitPriceCents: number;
+    lineTotalCents: number;
   }>;
 };
 
@@ -74,35 +91,54 @@ export type AuthSession = {
   };
 };
 
-async function request<T>(path: string, options: RequestInit = {}) {
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
+    ...init,
     headers: {
       "Content-Type": "application/json",
-      ...options.headers
+      ...init.headers
     }
   });
 
-  const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T> & {
-    error?: { message?: string };
-  };
-
-  if (!response.ok) {
-    throw new Error(body.error?.message ?? "Request failed");
+  if (response.status === 204) {
+    return undefined as T;
   }
 
-  return body.data;
+  const body = (await response.json()) as ApiEnvelope<T> | { message?: string; error?: string };
+
+  if (!response.ok) {
+    const message =
+      "message" in body && body.message
+        ? body.message
+        : "error" in body && body.error
+          ? body.error
+          : `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return (body as ApiEnvelope<T>).data;
 }
 
 export const api = {
   login(email: string, password: string) {
     if (DEMO_MODE) {
-      return demoApi.login();
+      return demoApi.login(email);
     }
 
     return request<AuthSession>("/api/v1/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password })
+    });
+  },
+
+  register(input: { email: string; password: string; firstName?: string; lastName?: string }) {
+    if (DEMO_MODE) {
+      return demoApi.login(input.email);
+    }
+
+    return request<AuthSession>("/api/v1/auth/register", {
+      method: "POST",
+      body: JSON.stringify(input)
     });
   },
 
@@ -165,17 +201,35 @@ export const api = {
       return demoApi.createPaymentIntent(accessToken, orderId);
     }
 
-    return request<{ clientSecret?: string; providerOrderId: string }>(
-      `/api/v1/payments/orders/${orderId}/intent`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({
-          provider: "stripe",
-          idempotencyKey: crypto.randomUUID()
-        })
-      }
-    );
+    return request<{ clientSecret?: string; providerOrderId: string }>(`/api/v1/payments/orders/${orderId}/intent`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({
+        provider: "stripe",
+        idempotencyKey: crypto.randomUUID()
+      })
+    });
+  },
+
+  myOrders(accessToken: string) {
+    if (DEMO_MODE) {
+      return demoApi.myOrders();
+    }
+
+    return request<CustomerOrder[]>("/api/v1/orders/me", {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  },
+
+  cancelOrder(accessToken: string, orderId: string) {
+    if (DEMO_MODE) {
+      return demoApi.cancelOrder(orderId);
+    }
+
+    return request<CustomerOrder>(`/api/v1/orders/me/${orderId}/cancel`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
   },
 
   adminCategories(accessToken: string) {

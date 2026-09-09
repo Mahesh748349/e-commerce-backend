@@ -1,4 +1,12 @@
-import type { AdminOrder, AuthSession, Cart, Category, InventoryItem, Product } from "./api";
+import type {
+  AdminOrder,
+  AuthSession,
+  Cart,
+  Category,
+  CustomerOrder,
+  InventoryItem,
+  Product
+} from "./api";
 
 type DemoStore = {
   cart: Cart;
@@ -293,5 +301,45 @@ export const demoApi = {
 
   async adminOrders() {
     return getStore().orders;
+  },
+
+  async myOrders(): Promise<CustomerOrder[]> {
+    return getStore().orders.map((order) => ({
+      id: order.id,
+      status: order.status,
+      totalCents: order.totalCents,
+      currency: order.currency,
+      createdAt: order.createdAt,
+      items: order.items.map((item) => ({
+        ...item,
+        unitPriceCents: 0,
+        lineTotalCents: 0
+      }))
+    }));
+  },
+
+  async cancelOrder(orderId: string): Promise<CustomerOrder> {
+    const store = getStore();
+    const order = store.orders.find((item) => item.id === orderId);
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    order.status = "CANCELLED";
+    setStore(store);
+
+    return {
+      id: order.id,
+      status: order.status,
+      totalCents: order.totalCents,
+      currency: order.currency,
+      createdAt: order.createdAt,
+      items: order.items.map((item) => ({
+        ...item,
+        unitPriceCents: 0,
+        lineTotalCents: 0
+      }))
+    };
   }
 };
