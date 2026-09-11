@@ -13,24 +13,30 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "admin@example.com" },
-    update: {},
+    update: {
+      firstName: "Rahul",
+      lastName: "Gowda"
+    },
     create: {
       email: "admin@example.com",
       passwordHash: adminPasswordHash,
-      firstName: "Admin",
-      lastName: "User",
+      firstName: "Rahul",
+      lastName: "Gowda",
       role: Role.ADMIN
     }
   });
 
   await prisma.user.upsert({
     where: { email: "customer@example.com" },
-    update: {},
+    update: {
+      firstName: "Priya",
+      lastName: "Sharma"
+    },
     create: {
       email: "customer@example.com",
       passwordHash: customerPasswordHash,
-      firstName: "Customer",
-      lastName: "User",
+      firstName: "Priya",
+      lastName: "Sharma",
       role: Role.CUSTOMER,
       cart: {
         create: {}
@@ -40,164 +46,244 @@ async function main() {
 
   const apparel = await prisma.category.upsert({
     where: { slug: "fashion" },
-    update: {},
+    update: {
+      name: "Karnataka Handlooms & Fashion",
+      description: "Mysore silk sarees, apparel, and footwear"
+    },
     create: {
-      name: "Fashion & Apparel",
+      name: "Karnataka Handlooms & Fashion",
       slug: "fashion",
-      description: "Clothing, footwear, and accessories"
+      description: "Mysore silk sarees, apparel, and footwear"
     }
   });
 
   const electronics = await prisma.category.upsert({
     where: { slug: "electronics" },
-    update: {},
+    update: {
+      name: "Electronics & Gadgets",
+      description: "Laptops, audio, and accessories"
+    },
     create: {
-      name: "Electronics",
+      name: "Electronics & Gadgets",
       slug: "electronics",
-      description: "Laptops, audio, and gadgets"
+      description: "Laptops, audio, and accessories"
     }
   });
 
   const mobiles = await prisma.category.upsert({
     where: { slug: "mobiles" },
-    update: {},
+    update: {
+      name: "Mobiles & Tablets",
+      description: "Smartphones, tablets, and wearables"
+    },
     create: {
       name: "Mobiles & Tablets",
       slug: "mobiles",
-      description: "Smartphones and tablets"
+      description: "Smartphones, tablets, and wearables"
     }
   });
 
   const food = await prisma.category.upsert({
     where: { slug: "food-delivery" },
-    update: {},
+    update: {
+      name: "Namma Food & Groceries (15m)",
+      description: "Authentic Karnataka delicacies, instant food delivery, and filter coffee"
+    },
     create: {
-      name: "Food & Groceries",
+      name: "Namma Food & Groceries (15m)",
       slug: "food-delivery",
-      description: "Instant food delivery and gourmet meals"
+      description: "Authentic Karnataka delicacies, instant food delivery, and filter coffee"
     }
   });
 
   const items = [
     {
+      category: apparel,
+      name: "Traditional Mysore Pure Silk Saree (Gold Zari)",
+      slug: "traditional-mysore-silk-saree",
+      description: "100% pure Mulberry silk with authentic gold zari border, crafted by master weavers in Mysuru, Karnataka. Geographical Indication (GI) certified.",
+      sku: "MYSORE-SILK-MAROON",
+      stock: 18,
+      price: 1299900,
+      attrs: {
+        color: "Royal Maroon",
+        material: "Pure Silk",
+        badge: "GI Tagged Karnataka",
+        imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
+      }
+    },
+    {
+      category: food,
+      name: "Namma Bengaluru Crispy Masala Dosa & Filter Kaapi",
+      slug: "bengaluru-masala-dosa-combo",
+      description: "Golden crisp ghee roast dosa filled with spiced potato palya, coconut chutney, sambar, and hot traditional tumbler filter coffee. Delivered in 15 mins.",
+      sku: "FOOD-BLR-DOSA-KAAPI",
+      stock: 100,
+      price: 24900,
+      attrs: {
+        meal: "Combo Meal",
+        badge: "⚡ 15m Instant BLR",
+        imageUrl: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80"
+      }
+    },
+    {
+      category: food,
+      name: "Coorg Pure Arabica Coffee Beans (Dark Roast)",
+      slug: "coorg-arabica-coffee-beans",
+      description: "Handpicked shade-grown Arabica coffee beans from the misty hills of Kodagu (Coorg), Karnataka. Rich dark chocolate and caramel notes.",
+      sku: "COORG-COFFEE-500G",
+      stock: 65,
+      price: 59900,
+      attrs: {
+        weight: "500g",
+        roast: "Dark Roast",
+        badge: "Estate Fresh Coorg",
+        imageUrl: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80"
+      }
+    },
+    {
+      category: food,
+      name: "Traditional Ghee Mysore Pak Sweet Box (500g)",
+      slug: "traditional-mysore-pak-box",
+      description: "Melt-in-mouth traditional royal sweet originated in the Mysore Palace kitchen. Prepared with pure desi cow ghee, besan, and aromatic cardamom.",
+      sku: "SWEET-MYSORE-PAK-500",
+      stock: 50,
+      price: 49900,
+      attrs: {
+        weight: "500g",
+        badge: "Palace Recipe",
+        imageUrl: "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80"
+      }
+    },
+    {
+      category: food,
+      name: "Royal Dum Mutton Biryani with Mirchi ka Salan",
+      slug: "royal-dum-mutton-biryani",
+      description: "Slow-cooked dum biryani with fragrant long-grain basmati, succulent tender spiced mutton, caramelized onions, saffron, and mint. Served with Salan & Raita.",
+      sku: "FOOD-BIRYANI-ROYAL",
+      stock: 45,
+      price: 39900,
+      attrs: {
+        portion: "Serves 2",
+        badge: "Swiggy Top Pick",
+        imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80"
+      }
+    },
+    {
       category: electronics,
       name: "Apple MacBook Pro 14\" M3 Max",
       slug: "apple-macbook-pro-14",
-      description: "Lightning-fast Apple M3 chip, 18GB Unified Memory, Liquid Retina XDR display, up to 22h battery life.",
+      description: "Lightning-fast Apple M3 Max chip, 36GB Unified Memory, Liquid Retina XDR display, up to 22h battery life. Official Apple India 1-Year Warranty.",
       sku: "MBP14-M3-SLV",
       stock: 14,
-      price: 149900,
-      attrs: { color: "Space Gray", storage: "512GB" }
+      price: 14990000,
+      attrs: {
+        color: "Space Gray",
+        storage: "512GB",
+        badge: "Prime Assured",
+        imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: electronics,
       name: "Sony WH-1000XM5 Wireless ANC Headphones",
       slug: "sony-wh-1000xm5",
-      description: "Industry-leading noise canceling with two processors, 8 microphones, and ultra-comfortable lightweight design.",
+      description: "Industry-leading noise canceling with two processors, 8 microphones, LDAC audio, and ultra-comfortable lightweight design.",
       sku: "SONY-XM5-BLK",
       stock: 28,
-      price: 34900,
-      attrs: { color: "Midnight Black" }
+      price: 2999000,
+      attrs: {
+        color: "Midnight Black",
+        badge: "Best Seller",
+        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: mobiles,
       name: "Apple iPhone 16 Pro Max 256GB",
       slug: "iphone-16-pro-max",
-      description: "Grade 5 Titanium design, A18 Pro chip, 48MP Fusion camera system with 5x Telephoto zoom.",
+      description: "Grade 5 Titanium design, A18 Pro chip, 48MP Fusion camera system with 5x Telephoto zoom. 5G dual SIM (eSIM + physical SIM).",
       sku: "IP16P-MAX-256",
       stock: 20,
-      price: 119900,
-      attrs: { color: "Natural Titanium" }
+      price: 14490000,
+      attrs: {
+        color: "Natural Titanium",
+        badge: "Deal of the Day",
+        imageUrl: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: mobiles,
       name: "Samsung Galaxy S24 Ultra AI Edition",
       slug: "samsung-s24-ultra",
-      description: "200MP camera, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and Galaxy AI photo assist.",
+      description: "200MP camera, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and Galaxy AI photo assist. Made in India edition.",
       sku: "S24U-512-TI",
       stock: 15,
-      price: 109900,
-      attrs: { color: "Titanium Gray" }
+      price: 12999900,
+      attrs: {
+        color: "Titanium Gray",
+        badge: "Limited Offer",
+        imageUrl: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: electronics,
-      name: "Ultra AMOLED Smartwatch Series 9",
+      name: "Ultra AMOLED Smartwatch Series 9 (BT Calling)",
       slug: "ultra-smartwatch-9",
-      description: "Always-On Retina display, ECG monitor, blood oxygen tracking, water resistant to 50 meters.",
+      description: "Always-On AMOLED display, Bluetooth calling with noise cancellation, heart rate & SpO2 tracking, 50m water resistant.",
       sku: "WATCH-S9-45",
       stock: 35,
-      price: 29900,
-      attrs: { size: "45mm", band: "Ocean Blue" }
+      price: 249900,
+      attrs: {
+        size: "45mm",
+        band: "Ocean Blue",
+        badge: "Special Deal",
+        imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: apparel,
-      name: "Heavyweight Fleece Streetwear Hoodie",
+      name: "Bengaluru Streetwear Heavyweight Cotton Hoodie",
       slug: "heavyweight-streetwear-hoodie",
-      description: "450 GSM French Terry cotton hoodie with reinforced ribbed cuffs, kangaroo pocket, and drop-shoulder fit.",
+      description: "450 GSM French Terry cotton hoodie with reinforced ribbed cuffs, kangaroo pocket, and relaxed Bengaluru oversized fit.",
       sku: "HOODIE-BLK-L",
       stock: 42,
-      price: 6999,
-      attrs: { size: "L", color: "Onyx Black" }
+      price: 199900,
+      attrs: {
+        size: "L",
+        color: "Onyx Black",
+        badge: "Trending BLR",
+        imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: apparel,
-      name: "Nike Air Zoom Athletic Running Sneakers",
+      name: "Nike Air Zoom Athletic Running Shoes",
       slug: "nike-air-zoom-running",
       description: "Responsive Zoom Air cushioning, breathable engineered mesh upper, and high-traction rubber waffle outsole.",
       sku: "NIKE-ZOOM-RED-10",
       stock: 25,
-      price: 12900,
-      attrs: { size: "US 10", color: "Crimson Red" }
-    },
-    {
-      category: food,
-      name: "Italian Truffle & Mushroom Artisan Pizza",
-      slug: "italian-truffle-artisan-pizza",
-      description: "Fresh wood-fired 12\" sourdough crust topped with San Marzano tomatoes, fresh buffalo mozzarella, and black truffle oil.",
-      sku: "FOOD-PIZZA-TRUF",
-      stock: 50,
-      price: 2199,
-      attrs: { size: "12 inch", crust: "Sourdough" }
-    },
-    {
-      category: food,
-      name: "Royal Hyderabadi Mutton Dum Biryani",
-      slug: "royal-hyderabadi-dum-biryani",
-      description: "Slow-cooked aromatic basmati rice layered with tender spiced mutton, caramelized onions, saffron, and fresh mint.",
-      sku: "FOOD-BIRYANI-HYD",
-      stock: 60,
-      price: 2499,
-      attrs: { portion: "Serves 2-3" }
-    },
-    {
-      category: food,
-      name: "Gourmet Double Angus Cheeseburger",
-      slug: "gourmet-double-angus-burger",
-      description: "Double 100% prime Angus beef patties, aged cheddar, crisp lettuce, house brioche bun, and hand-cut truffle parmesan fries.",
-      sku: "FOOD-BURGER-ANGUS",
-      stock: 45,
-      price: 1699,
-      attrs: { sides: "Truffle Fries" }
+      price: 799900,
+      attrs: {
+        size: "UK 9",
+        color: "Crimson Red",
+        badge: "Best Seller",
+        imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80"
+      }
     },
     {
       category: electronics,
-      name: "Mechanical Tactile Gaming Keyboard RGB",
+      name: "RGB Mechanical Tactile Gaming Keyboard",
       slug: "rgb-mechanical-gaming-keyboard",
-      description: "Hot-swappable brown switches, per-key RGB backlighting, sound-dampening gasket mount, and aluminum frame.",
+      description: "Hot-swappable tactile brown switches, per-key RGB backlighting, sound-dampening gasket mount, and aircraft-grade aluminum frame.",
       sku: "KB-MECH-RGB-BRN",
       stock: 30,
-      price: 8999,
-      attrs: { switch: "Brown Tactile" }
-    },
-    {
-      category: apparel,
-      name: "Minimalist Italian Chronograph Watch",
-      slug: "minimalist-chronograph-watch",
-      description: "Surgical-grade stainless steel casing, sapphire crystal scratch-resistant glass, and genuine full-grain leather strap.",
-      sku: "WATCH-CHRONO-BRN",
-      stock: 19,
-      price: 14900,
-      attrs: { strap: "Brown Leather" }
+      price: 499900,
+      attrs: {
+        switch: "Brown Tactile",
+        badge: "Top Rated",
+        imageUrl: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80"
+      }
     }
   ];
 
@@ -221,14 +307,16 @@ async function main() {
       where: { sku: item.sku },
       update: {
         stockCount: item.stock,
-        priceCents: item.price
+        priceCents: item.price,
+        currency: "INR",
+        attributes: item.attrs
       },
       create: {
         productId: prod.id,
         sku: item.sku,
         stockCount: item.stock,
         priceCents: item.price,
-        currency: "USD",
+        currency: "INR",
         attributes: item.attrs
       }
     });

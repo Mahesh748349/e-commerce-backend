@@ -127,6 +127,36 @@ export type AuthSession = {
 };
 
 const PRODUCT_IMAGE_FALLBACKS: Record<string, { image: string; badge: string; rating: number; reviews: number }> = {
+  "traditional-mysore-silk-saree": {
+    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+    badge: "GI Tagged Karnataka",
+    rating: 4.9,
+    reviews: 1420
+  },
+  "coorg-arabica-coffee-beans": {
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+    badge: "Estate Fresh Coorg",
+    rating: 4.8,
+    reviews: 980
+  },
+  "bengaluru-masala-dosa-combo": {
+    image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80",
+    badge: "⚡ 15m Instant BLR",
+    rating: 4.9,
+    reviews: 4200
+  },
+  "traditional-mysore-pak-box": {
+    image: "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80",
+    badge: "Palace Recipe",
+    rating: 4.9,
+    reviews: 1850
+  },
+  "royal-dum-mutton-biryani": {
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    badge: "Swiggy Top Pick",
+    rating: 4.9,
+    reviews: 3600
+  },
   "apple-macbook-pro-14": {
     image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
     badge: "Prime Assured",
@@ -153,13 +183,13 @@ const PRODUCT_IMAGE_FALLBACKS: Record<string, { image: string; badge: string; ra
   },
   "ultra-smartwatch-9": {
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-    badge: "30% OFF",
+    badge: "Special Deal",
     rating: 4.6,
     reviews: 940
   },
   "heavyweight-streetwear-hoodie": {
     image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
-    badge: "Trending",
+    badge: "Trending BLR",
     rating: 4.6,
     reviews: 620
   },
@@ -198,18 +228,6 @@ const PRODUCT_IMAGE_FALLBACKS: Record<string, { image: string; badge: string; ra
     badge: "Amazon's Choice",
     rating: 4.6,
     reviews: 540
-  },
-  "wireless-earbuds": {
-    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80",
-    badge: "Popular Pick",
-    rating: 4.7,
-    reviews: 1120
-  },
-  "premium-hoodie": {
-    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80",
-    badge: "Classic Fit",
-    rating: 4.5,
-    reviews: 480
   }
 };
 
@@ -587,7 +605,7 @@ export const api = {
       sku: input.sku,
       stockCount: input.stockCount,
       priceCents: input.priceCents,
-      currency: "USD",
+      currency: "INR",
       attributes: {
         imageUrl: input.imageUrl,
         badge: input.badge
@@ -625,9 +643,11 @@ export const api = {
   }
 };
 
-export function formatMoney(amountCents: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
+export function formatMoney(amountCents: number, currency?: string) {
+  const curr = !currency || currency === "USD" ? "INR" : currency;
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: currency || "USD"
+    currency: curr,
+    maximumFractionDigits: 0
   }).format(amountCents / 100);
 }

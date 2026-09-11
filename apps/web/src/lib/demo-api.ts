@@ -22,174 +22,187 @@ const createInventory = (id: string, sku: string, stock: number, price: number, 
   sku,
   stockCount: stock,
   priceCents: price,
-  currency: "USD",
+  currency: "INR",
   attributes: attr
 });
 
 export const demoCategories: Category[] = [
-  { id: "cat-all", name: "All Categories", slug: "all", description: "All products", parentId: null },
-  { id: "cat-electronics", name: "Electronics", slug: "electronics", description: "Laptops, audio, and gadgets", parentId: null },
-  { id: "cat-mobiles", name: "Mobiles & Tablets", slug: "mobiles", description: "Smartphones and tablets", parentId: null },
-  { id: "cat-fashion", name: "Fashion & Apparel", slug: "fashion", description: "Clothing, footwear, and accessories", parentId: null },
-  { id: "cat-food", name: "Food & Groceries", slug: "food-delivery", description: "Instant food delivery and gourmet meals", parentId: null }
+  { id: "cat-all", name: "All Departments", slug: "all", description: "All products", parentId: null },
+  { id: "cat-electronics", name: "Electronics & Gadgets", slug: "electronics", description: "Laptops, audio, and accessories", parentId: null },
+  { id: "cat-mobiles", name: "Mobiles & Tablets", slug: "mobiles", description: "Smartphones, tablets, and wearables", parentId: null },
+  { id: "cat-fashion", name: "Karnataka Handlooms & Fashion", slug: "fashion", description: "Mysore silk sarees, apparel, and footwear", parentId: null },
+  { id: "cat-food", name: "Namma Food & Groceries (15m)", slug: "food-delivery", description: "Authentic Karnataka delicacies, instant food delivery, and filter coffee", parentId: null }
 ];
 
 export const demoProducts: Product[] = [
   {
     id: "prod-1",
-    name: "Apple MacBook Pro 14\" M3 Max",
-    slug: "apple-macbook-pro-14",
-    description: "Lightning-fast Apple M3 chip, 18GB Unified Memory, Liquid Retina XDR display, up to 22h battery life.",
-    category: "Electronics",
+    name: "Traditional Mysore Pure Silk Saree (Gold Zari)",
+    slug: "traditional-mysore-silk-saree",
+    description: "100% pure Mulberry silk with authentic gold zari border, crafted by master weavers in Mysuru, Karnataka. Geographical Indication (GI) certified.",
+    category: "Karnataka Handlooms & Fashion",
     rating: 4.9,
     reviewCount: 1420,
-    badge: "Prime Assured",
-    originalPriceCents: 169900,
-    imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-1", "MBP14-M3-SLV", 14, 149900, { color: "Space Gray", storage: "512GB" })]
+    badge: "GI Tagged Karnataka",
+    originalPriceCents: 1599900,
+    imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-1", "MYSORE-SILK-MAROON", 18, 1299900, { color: "Royal Maroon", material: "Pure Silk" })]
   },
   {
     id: "prod-2",
-    name: "Sony WH-1000XM5 Wireless ANC Headphones",
-    slug: "sony-wh-1000xm5",
-    description: "Industry-leading noise canceling with two processors, 8 microphones, and ultra-comfortable lightweight design.",
-    category: "Electronics",
-    rating: 4.8,
-    reviewCount: 2150,
-    badge: "Best Seller",
-    originalPriceCents: 39900,
-    imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-2", "SONY-XM5-BLK", 28, 34900, { color: "Midnight Black" })]
+    name: "Namma Bengaluru Crispy Masala Dosa & Filter Kaapi",
+    slug: "bengaluru-masala-dosa-combo",
+    description: "Golden crisp ghee roast dosa filled with spiced potato palya, coconut chutney, sambar, and hot traditional tumbler filter coffee. Delivered in 15 mins.",
+    category: "Namma Food & Groceries (15m)",
+    rating: 4.9,
+    reviewCount: 4200,
+    badge: "⚡ 15m Instant BLR",
+    originalPriceCents: 34900,
+    imageUrl: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-2", "FOOD-BLR-DOSA-KAAPI", 100, 24900, { meal: "Combo Meal", speed: "15 min" })]
   },
   {
     id: "prod-3",
+    name: "Coorg Pure Arabica Coffee Beans (Dark Roast)",
+    slug: "coorg-arabica-coffee-beans",
+    description: "Handpicked shade-grown Arabica coffee beans from the misty hills of Kodagu (Coorg), Karnataka. Rich dark chocolate and caramel notes.",
+    category: "Namma Food & Groceries (15m)",
+    rating: 4.8,
+    reviewCount: 980,
+    badge: "Estate Fresh Coorg",
+    originalPriceCents: 79900,
+    imageUrl: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-3", "COORG-COFFEE-500G", 65, 59900, { weight: "500g", roast: "Dark Roast" })]
+  },
+  {
+    id: "prod-4",
+    name: "Traditional Ghee Mysore Pak Sweet Box (500g)",
+    slug: "traditional-mysore-pak-box",
+    description: "Melt-in-mouth traditional royal sweet originated in the Mysore Palace kitchen. Prepared with pure desi cow ghee, besan, and aromatic cardamom.",
+    category: "Namma Food & Groceries (15m)",
+    rating: 4.9,
+    reviewCount: 1850,
+    badge: "Palace Recipe",
+    originalPriceCents: 64900,
+    imageUrl: "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-4", "SWEET-MYSORE-PAK-500", 50, 49900, { weight: "500g", style: "Melt-in-mouth" })]
+  },
+  {
+    id: "prod-5",
+    name: "Royal Dum Mutton Biryani with Mirchi ka Salan",
+    slug: "royal-dum-mutton-biryani",
+    description: "Slow-cooked dum biryani with fragrant long-grain basmati, succulent tender spiced mutton, caramelized onions, saffron, and mint. Served with Salan & Raita.",
+    category: "Namma Food & Groceries (15m)",
+    rating: 4.9,
+    reviewCount: 3600,
+    badge: "Swiggy Top Pick",
+    originalPriceCents: 49900,
+    imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-5", "FOOD-BIRYANI-ROYAL", 45, 39900, { portion: "Serves 2" })]
+  },
+  {
+    id: "prod-6",
+    name: "Apple MacBook Pro 14\" M3 Max",
+    slug: "apple-macbook-pro-14",
+    description: "Lightning-fast Apple M3 Max chip, 36GB Unified Memory, Liquid Retina XDR display, up to 22h battery life. Official Apple India 1-Year Warranty.",
+    category: "Electronics & Gadgets",
+    rating: 4.9,
+    reviewCount: 1420,
+    badge: "Prime Assured",
+    originalPriceCents: 16990000,
+    imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-6", "MBP14-M3-SLV", 14, 14990000, { color: "Space Gray", storage: "512GB" })]
+  },
+  {
+    id: "prod-7",
+    name: "Sony WH-1000XM5 Wireless ANC Headphones",
+    slug: "sony-wh-1000xm5",
+    description: "Industry-leading noise canceling with two processors, 8 microphones, LDAC audio, and ultra-comfortable lightweight design.",
+    category: "Electronics & Gadgets",
+    rating: 4.8,
+    reviewCount: 2150,
+    badge: "Best Seller",
+    originalPriceCents: 3499000,
+    imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-7", "SONY-XM5-BLK", 28, 2999000, { color: "Midnight Black" })]
+  },
+  {
+    id: "prod-8",
     name: "Apple iPhone 16 Pro Max 256GB",
     slug: "iphone-16-pro-max",
-    description: "Grade 5 Titanium design, A18 Pro chip, 48MP Fusion camera system with 5x Telephoto zoom.",
+    description: "Grade 5 Titanium design, A18 Pro chip, 48MP Fusion camera system with 5x Telephoto zoom. 5G dual SIM (eSIM + physical SIM).",
     category: "Mobiles & Tablets",
     rating: 4.9,
     reviewCount: 3480,
     badge: "Deal of the Day",
-    originalPriceCents: 129900,
+    originalPriceCents: 15990000,
     imageUrl: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-3", "IP16P-MAX-256", 20, 119900, { color: "Natural Titanium" })]
+    inventoryItems: [createInventory("inv-8", "IP16P-MAX-256", 20, 14490000, { color: "Natural Titanium" })]
   },
   {
-    id: "prod-4",
+    id: "prod-9",
     name: "Samsung Galaxy S24 Ultra AI Edition",
     slug: "samsung-s24-ultra",
-    description: "200MP camera, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and Galaxy AI photo assist.",
+    description: "200MP camera, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and Galaxy AI photo assist. Made in India edition.",
     category: "Mobiles & Tablets",
     rating: 4.7,
     reviewCount: 1890,
     badge: "Limited Offer",
-    originalPriceCents: 124900,
+    originalPriceCents: 14499900,
     imageUrl: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-4", "S24U-512-TI", 15, 109900, { color: "Titanium Gray" })]
-  },
-  {
-    id: "prod-5",
-    name: "Ultra AMOLED Smartwatch Series 9",
-    slug: "ultra-smartwatch-9",
-    description: "Always-On Retina display, ECG monitor, blood oxygen tracking, water resistant to 50 meters.",
-    category: "Electronics",
-    rating: 4.6,
-    reviewCount: 940,
-    badge: "30% OFF",
-    originalPriceCents: 39900,
-    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-5", "WATCH-S9-45", 35, 29900, { size: "45mm", band: "Ocean Blue" })]
-  },
-  {
-    id: "prod-6",
-    name: "Heavyweight Fleece Streetwear Hoodie",
-    slug: "heavyweight-streetwear-hoodie",
-    description: "450 GSM French Terry cotton hoodie with reinforced ribbed cuffs, kangaroo pocket, and drop-shoulder fit.",
-    category: "Fashion & Apparel",
-    rating: 4.6,
-    reviewCount: 620,
-    badge: "Trending",
-    originalPriceCents: 9999,
-    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-6", "HOODIE-BLK-L", 42, 6999, { size: "L", color: "Onyx Black" })]
-  },
-  {
-    id: "prod-7",
-    name: "Nike Air Zoom Athletic Running Sneakers",
-    slug: "nike-air-zoom-running",
-    description: "Responsive Zoom Air cushioning, breathable engineered mesh upper, and high-traction rubber waffle outsole.",
-    category: "Fashion & Apparel",
-    rating: 4.8,
-    reviewCount: 2840,
-    badge: "Best Seller",
-    originalPriceCents: 16000,
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-7", "NIKE-ZOOM-RED-10", 25, 12900, { size: "US 10", color: "Crimson Red" })]
-  },
-  {
-    id: "prod-8",
-    name: "Italian Truffle & Mushroom Artisan Pizza",
-    slug: "italian-truffle-artisan-pizza",
-    description: "Fresh wood-fired 12\" sourdough crust topped with San Marzano tomatoes, fresh buffalo mozzarella, and black truffle oil.",
-    category: "Food & Groceries",
-    rating: 4.9,
-    reviewCount: 1450,
-    badge: "⚡ 20m Delivery",
-    originalPriceCents: 2699,
-    imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-8", "FOOD-PIZZA-TRUF", 50, 2199, { size: "12 inch", crust: "Sourdough" })]
-  },
-  {
-    id: "prod-9",
-    name: "Royal Hyderabadi Mutton Dum Biryani",
-    slug: "royal-hyderabadi-dum-biryani",
-    description: "Slow-cooked aromatic basmati rice layered with tender spiced mutton, caramelized onions, saffron, and fresh mint. Served with Mirchi ka Salan & Raita.",
-    category: "Food & Groceries",
-    rating: 4.9,
-    reviewCount: 3200,
-    badge: "Swiggy Top Pick",
-    originalPriceCents: 3200,
-    imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-9", "FOOD-BIRYANI-HYD", 60, 2499, { portion: "Serves 2-3" })]
+    inventoryItems: [createInventory("inv-9", "S24U-512-TI", 15, 12999900, { color: "Titanium Gray" })]
   },
   {
     id: "prod-10",
-    name: "Gourmet Double Angus Cheeseburger",
-    slug: "gourmet-double-angus-burger",
-    description: "Double 100% prime Angus beef patties, aged cheddar, crisp lettuce, house brioche bun, and hand-cut truffle parmesan fries.",
-    category: "Food & Groceries",
-    rating: 4.7,
-    reviewCount: 890,
-    badge: "⚡ Quick Bite",
-    originalPriceCents: 2199,
-    imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-10", "FOOD-BURGER-ANGUS", 45, 1699, { sides: "Truffle Fries" })]
+    name: "Ultra AMOLED Smartwatch Series 9 (BT Calling)",
+    slug: "ultra-smartwatch-9",
+    description: "Always-On AMOLED display, Bluetooth calling with noise cancellation, heart rate & SpO2 tracking, 50m water resistant.",
+    category: "Electronics & Gadgets",
+    rating: 4.6,
+    reviewCount: 940,
+    badge: "Special Deal",
+    originalPriceCents: 499900,
+    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-10", "WATCH-S9-45", 35, 249900, { size: "45mm", band: "Ocean Blue" })]
   },
   {
     id: "prod-11",
-    name: "Mechanical Tactile Gaming Keyboard RGB",
-    slug: "rgb-mechanical-gaming-keyboard",
-    description: "Hot-swappable brown switches, per-key RGB backlighting, sound-dampening gasket mount, and aluminum frame.",
-    category: "Electronics",
-    rating: 4.7,
-    reviewCount: 710,
-    badge: "Top Rated",
-    originalPriceCents: 11999,
-    imageUrl: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-11", "KB-MECH-RGB-BRN", 30, 8999, { switch: "Brown Tactile" })]
+    name: "Bengaluru Streetwear Heavyweight Cotton Hoodie",
+    slug: "heavyweight-streetwear-hoodie",
+    description: "450 GSM French Terry cotton hoodie with reinforced ribbed cuffs, kangaroo pocket, and relaxed Bengaluru oversized fit.",
+    category: "Karnataka Handlooms & Fashion",
+    rating: 4.6,
+    reviewCount: 620,
+    badge: "Trending BLR",
+    originalPriceCents: 299900,
+    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-11", "HOODIE-BLK-L", 42, 199900, { size: "L", color: "Onyx Black" })]
   },
   {
     id: "prod-12",
-    name: "Minimalist Italian Chronograph Watch",
-    slug: "minimalist-chronograph-watch",
-    description: "Surgical-grade stainless steel casing, sapphire crystal scratch-resistant glass, and genuine full-grain leather strap.",
-    category: "Fashion & Apparel",
-    rating: 4.6,
-    reviewCount: 540,
-    badge: "Amazon's Choice",
-    originalPriceCents: 22000,
-    imageUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-    inventoryItems: [createInventory("inv-12", "WATCH-CHRONO-BRN", 19, 14900, { strap: "Brown Leather" })]
+    name: "Nike Air Zoom Athletic Running Shoes",
+    slug: "nike-air-zoom-running",
+    description: "Responsive Zoom Air cushioning, breathable engineered mesh upper, and high-traction rubber waffle outsole.",
+    category: "Karnataka Handlooms & Fashion",
+    rating: 4.8,
+    reviewCount: 2840,
+    badge: "Best Seller",
+    originalPriceCents: 999900,
+    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-12", "NIKE-ZOOM-RED-10", 25, 799900, { size: "UK 9", color: "Crimson Red" })]
+  },
+  {
+    id: "prod-13",
+    name: "RGB Mechanical Tactile Gaming Keyboard",
+    slug: "rgb-mechanical-gaming-keyboard",
+    description: "Hot-swappable tactile brown switches, per-key RGB backlighting, sound-dampening gasket mount, and aircraft-grade aluminum frame.",
+    category: "Electronics & Gadgets",
+    rating: 4.7,
+    reviewCount: 710,
+    badge: "Top Rated",
+    originalPriceCents: 699900,
+    imageUrl: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-13", "KB-MECH-RGB-BRN", 30, 499900, { switch: "Brown Tactile" })]
   }
 ];
 
@@ -197,8 +210,8 @@ export const defaultDemoUsers: AdminUser[] = [
   {
     id: "88888888-8888-4888-8888-888888888888",
     email: "admin@example.com",
-    firstName: "Admin",
-    lastName: "User",
+    firstName: "Rahul",
+    lastName: "Gowda",
     role: "ADMIN",
     isActive: true,
     createdAt: new Date().toISOString()
@@ -206,13 +219,15 @@ export const defaultDemoUsers: AdminUser[] = [
   {
     id: "99999999-9999-4999-8999-999999999999",
     email: "customer@example.com",
-    firstName: "Customer",
-    lastName: "User",
+    firstName: "Priya",
+    lastName: "Sharma",
     role: "CUSTOMER",
     isActive: true,
     createdAt: new Date().toISOString()
   }
 ];
+
+const DEMO_STORE_STORAGE_KEY = "demo-store-v3-karnataka";
 
 function getStore(): DemoStore {
   if (typeof window === "undefined") {
@@ -225,7 +240,11 @@ function getStore(): DemoStore {
     };
   }
 
-  const stored = window.localStorage.getItem("demo-store");
+  // Clear older versions to avoid stale currency/catalog
+  window.localStorage.removeItem("demo-store");
+  window.localStorage.removeItem("demo-store-v2");
+
+  const stored = window.localStorage.getItem(DEMO_STORE_STORAGE_KEY);
   if (stored) {
     try {
       const parsed = JSON.parse(stored) as Partial<DemoStore>;
@@ -252,7 +271,7 @@ function getStore(): DemoStore {
 
 function setStore(store: DemoStore) {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem("demo-store", JSON.stringify(store));
+    window.localStorage.setItem(DEMO_STORE_STORAGE_KEY, JSON.stringify(store));
   }
 }
 
@@ -410,7 +429,7 @@ export const demoApi = {
       id: orderId,
       status: "PAID",
       totalCents,
-      currency: "USD",
+      currency: "INR",
       createdAt: new Date().toISOString(),
       user: {
         email: "customer@example.com"
@@ -423,7 +442,7 @@ export const demoApi = {
     return {
       id: orderId,
       totalCents,
-      currency: "USD"
+      currency: "INR"
     };
   },
 
@@ -503,7 +522,7 @@ export const demoApi = {
       sku: input.sku,
       stockCount: input.stockCount,
       priceCents: input.priceCents,
-      currency: "USD",
+      currency: "INR",
       attributes: {
         imageUrl: input.imageUrl,
         badge: input.badge

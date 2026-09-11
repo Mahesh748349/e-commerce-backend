@@ -14,18 +14,21 @@ import {
 } from "../../lib/api";
 
 const PRESET_IMAGES = [
+  { label: "Mysore Silk Saree", url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80" },
+  { label: "Coorg Arabica Coffee", url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" },
+  { label: "Masala Dosa & Kaapi", url: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80" },
+  { label: "Mysore Pak Box", url: "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80" },
+  { label: "Royal Dum Biryani", url: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80" },
   { label: "MacBook Laptop", url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80" },
   { label: "Wireless Headphones", url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80" },
   { label: "Smartphone", url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80" },
   { label: "Smartwatch", url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80" },
   { label: "Running Shoes", url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80" },
   { label: "Streetwear Hoodie", url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80" },
-  { label: "Gaming Keyboard", url: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80" },
-  { label: "Travel Backpack", url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80" },
-  { label: "Artisan Pizza", url: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80" }
+  { label: "Gaming Keyboard", url: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80" }
 ];
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80";
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80";
 
 export function AdminPage() {
   const [session, setSession] = useState<AuthSession | null>(null);
@@ -38,8 +41,8 @@ export function AdminPage() {
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin");
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("AdminPassword123!");
-  const [firstName, setFirstName] = useState("Admin");
-  const [lastName, setLastName] = useState("User");
+  const [firstName, setFirstName] = useState("Rahul");
+  const [lastName, setLastName] = useState("Gowda");
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<"products" | "orders" | "users" | "categories">("products");
@@ -53,7 +56,7 @@ export function AdminPage() {
   const [newProductName, setNewProductName] = useState("");
   const [newCategoryId, setNewCategoryId] = useState("");
   const [newSku, setNewSku] = useState("");
-  const [newPriceDollars, setNewPriceDollars] = useState(49.99);
+  const [newPriceRupees, setNewPriceRupees] = useState(1499);
   const [newStockCount, setNewStockCount] = useState(25);
   const [newImageUrl, setNewImageUrl] = useState(DEFAULT_IMAGE);
   const [newBadge, setNewBadge] = useState("Prime Assured");
@@ -171,7 +174,7 @@ export function AdminPage() {
     setLoading(true);
     try {
       const generatedSku = newSku.trim() || `${newProductName.slice(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-      const priceCents = Math.round(newPriceDollars * 100);
+      const priceCents = Math.round(newPriceRupees * 100);
 
       await api.adminCreateFullProduct(session.tokens.accessToken, {
         categoryId: newCategoryId,
@@ -291,7 +294,7 @@ export function AdminPage() {
     const lowStockAlerts = products.filter((p) => (p.inventoryItems[0]?.stockCount ?? 0) <= 15).length;
 
     return {
-      revenue: formatMoney(totalRevenueCents, "USD"),
+      revenue: formatMoney(totalRevenueCents, "INR"),
       orderCount: orders.length,
       skus: activeSkus,
       lowStock: lowStockAlerts,
@@ -603,7 +606,7 @@ export function AdminPage() {
                             <code>{inv?.sku ?? "N/A"}</code>
                           </td>
                           <td>
-                            <strong>{formatMoney(price, inv?.currency ?? "USD")}</strong>
+                            <strong>{formatMoney(price, inv?.currency ?? "INR")}</strong>
                           </td>
                           <td>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -958,14 +961,14 @@ export function AdminPage() {
                     </div>
 
                     <div className="admin-form-group">
-                      <label>Price in USD ($) *</label>
+                      <label>Price in INR (₹) *</label>
                       <input
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="1"
                         className="admin-input"
-                        value={newPriceDollars}
-                        onChange={(e) => setNewPriceDollars(Number(e.target.value))}
+                        value={newPriceRupees}
+                        onChange={(e) => setNewPriceRupees(Number(e.target.value))}
                         required
                       />
                     </div>
@@ -989,12 +992,15 @@ export function AdminPage() {
                         value={newBadge}
                         onChange={(e) => setNewBadge(e.target.value)}
                       >
+                        <option value="GI Tagged Karnataka">GI Tagged Karnataka</option>
+                        <option value="⚡ 15m Instant BLR">⚡ 15m Instant BLR</option>
+                        <option value="Estate Fresh Coorg">Estate Fresh Coorg</option>
+                        <option value="Palace Recipe">Palace Recipe</option>
                         <option value="Prime Assured">Prime Assured</option>
                         <option value="Best Seller">Best Seller</option>
                         <option value="Deal of the Day">Deal of the Day</option>
-                        <option value="Trending">Trending</option>
+                        <option value="Trending BLR">Trending BLR</option>
                         <option value="New Arrival">New Arrival</option>
-                        <option value="⚡ 20m Delivery">⚡ 20m Delivery (Food)</option>
                       </select>
                     </div>
 

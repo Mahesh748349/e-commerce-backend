@@ -7,14 +7,17 @@ A production-grade, microservices-inspired e-commerce and food delivery platform
 
 ## Key Highlights & Capabilities
 
-### Amazon / Flipkart Storefront (`apps/web`)
-- **Modern E-Commerce Header:** Top dark nav bar with department selector, search bar with category filters, delivery pin-code locator, Account & Lists modal, and live cart item counter badge.
-- **Hero Promotional Banner:** Flashy festival sales banner (Flipkart Big Billion Days / Amazon Great Indian Festival) with deal tiles and quick highlights.
-- **Rich Catalog Across 4 Verticals:** Realistic product catalog covering Electronics, Mobiles & Tech, Fashion & Apparel, and 15-Minute Food & Groceries Delivery.
+### Amazon / Flipkart Storefront (`apps/web`) — Karnataka & Indian Localization
+- **Modern E-Commerce Header:** Top dark nav bar with department selector, search bar with category filters, delivery pin-code locator tailored to Karnataka (`Indiranagar, Bengaluru - 560038`, Mysuru, Hubballi, Mangaluru), Account & Lists modal, and live cart item counter badge.
+- **Hero Promotional Banner:** Namma Karnataka Mega Utsav Deals (`NAMMAKARNATAKA` coupon for 25% off) with deal tiles and quick highlights.
+- **Rich Catalog with Authentic Karnataka Specialties:**
+  - **Karnataka Handlooms & Fashion:** GI-Tagged Traditional Mysore Pure Silk Saree with Gold Zari Border, Bengaluru Streetwear Heavyweight Hoodies, Nike Running Shoes.
+  - **Namma Food & Groceries (15m Delivery):** Namma Bengaluru Crispy Masala Dosa & Filter Kaapi Combo, Coorg Pure Arabica Coffee Beans, Traditional Ghee Mysore Pak Sweet Box, Royal Dum Biryani.
+  - **Electronics & Mobiles:** Apple MacBook Pro 14" M3 Max, Apple iPhone 16 Pro Max, Sony WH-1000XM5, Samsung Galaxy S24 Ultra.
+- **Authentic Indian Rupee (`₹`) Pricing:** Formatted in the Indian numbering system (`en-IN`: `₹1,49,900`, `₹12,999`, `₹499`, etc.) stored accurately in paise.
 - **Amazon-Grade Product Cards:** High-resolution product images, star ratings with review counts, discount percentage tags, Prime Assured badges, stock urgency warnings, and 1-click "Buy Now".
-- **Product Details Quick-Modal:** Full specifications, SKU variant options (colors, sizes, storage), stock availability, and direct cart actions.
-- **Interactive Slide-Over Cart Drawer:** Side-cart with quantity increment/decrement steppers, coupon code engine (`AMAZON20`, `FLIPKART50`, `SAVE20`), delivery fee calculations (FREE over $50), and price breakdown.
-- **Seamless Checkout Modal:** Step-by-step shipping address form and payment selector (Instant UPI/QR, Credit/Debit Card, Cash on Delivery).
+- **Interactive Slide-Over Cart Drawer:** Side-cart with quantity increment/decrement steppers, coupon engine (`NAMMAKARNATAKA`, `BENGALURU50`, `KAVERI20`, `FLIPKART50`, `AMAZON20`), delivery fee calculations (FREE over ₹499, standard ₹40), and bill breakdown.
+- **Seamless Checkout Modal:** Pre-filled Karnataka shipping addresses (Indiranagar, Bengaluru) and Indian payment selectors (Instant UPI / QR via PhonePe, Google Pay, Paytm, BHIM; RuPay / Debit / Credit Cards; Cash on Delivery).
 - **Live Order Tracking Timeline:** Visual stepper (`Order Placed` $\rightarrow$ `Processing` $\rightarrow$ `Dispatched` $\rightarrow$ `Delivered`) with real-time order cancellation that restores inventory stock atomically.
 - **Dual-Mode Architecture:** Communicates with the live Express backend (port 4000) or runs in In-Memory Demo Mode with an instant header toggle—ensuring zero downtime during live portfolio demos.
 
@@ -164,88 +167,126 @@ The seed is safe to rerun because it uses upserts. It creates two users, categor
 
 ### 5. Start the development processes
 
-Use separate terminals so each long-running process remains visible.
-
-API terminal:
-
-```bash
-npm run dev -w apps/api
-```
-
-Web terminal:
-
-```bash
-npm run dev -w apps/web
-```
-
-Optional worker terminal:
-
-```bash
-npm run dev:worker -w apps/api
-```
-
-The worker is needed for queued order/payment processing. The API and web app can start without it, but checkout processing is incomplete without the worker.
-
-The root command is also available:
+You can launch both the **Express API Gateway** (port 4000) and the **Next.js Storefront** (port 3000) simultaneously with a single command from the repository root:
 
 ```bash
 npm run dev
 ```
 
-For reliable local development, the explicit workspace commands above are recommended because API, web, and worker have different lifecycles.
+This runs both servers concurrently with color-coded terminal logs:
+- `[api]` Express API Gateway & routes running at `http://localhost:4000`
+- `[web]` Next.js Storefront & Admin Portal running at `http://localhost:3000`
+
+#### Alternative: Running in separate terminals
+
+If you prefer dedicated terminal windows for each process:
+
+**Terminal 1 (Backend API):**
+```bash
+npm run dev:api
+```
+
+**Terminal 2 (Storefront & Admin):**
+```bash
+npm run dev:web
+```
+
+**Terminal 3 (Optional BullMQ Worker for background queues):**
+```bash
+npm run dev:worker -w apps/api
+```
+
+> [!TIP]
+> **Troubleshooting: "Failed to connect" on `localhost:3000`**
+> If your browser says "Failed to connect" or "This site can’t be reached":
+> 1. Check if the web dev server is running. If you had an older `npm run dev` running in your terminal, press **`Ctrl + C`** to terminate it.
+> 2. Run **`npm run dev`** again from the root folder. Both `[api]` and `[web]` should print startup messages.
+> 3. Verify that your Docker containers are running: `docker compose ps` (Postgres, Redis, and RabbitMQ must be healthy).
+
+---
 
 ## Local URLs
 
-| Component     | URL                            |
-| ------------- | ------------------------------ |
-| Storefront    | `http://localhost:3000/`       |
-| Admin console | `http://localhost:3000/admin`  |
-| API health    | `http://localhost:4000/health` |
-| API base      | `http://localhost:4000/api/v1` |
-| Adminer       | `http://localhost:8080`        |
+| Component | URL | Purpose |
+| :--- | :--- | :--- |
+| **Storefront (Customer)** | [`http://localhost:3000/`](http://localhost:3000/) | Amazon/Flipkart browsing, search, cart, checkout |
+| **Seller Central (Admin)** | [`http://localhost:3000/admin`](http://localhost:3000/admin) | KPI metrics, catalog, order fulfillment, users |
+| **API Health** | [`http://localhost:4000/health`](http://localhost:4000/health) | Backend health check (PostgreSQL + Redis status) |
+| **API Base URL** | [`http://localhost:4000/api/v1`](http://localhost:4000/api/v1) | Express REST API endpoints |
+| **Adminer Database GUI** | [`http://localhost:8080`](http://localhost:8080) | Web-based PostgreSQL database inspector |
 
-The web application currently has no separate `/cart`, `/orders`, `/account`, or `/products/:slug` frontend routes. Those workflows are implemented in the storefront UI and API.
+---
 
-## Seed Accounts
+## Step-by-Step Testing Guide (For Demos & Resumes)
 
-| Role     | Email                  | Password               |
-| -------- | ---------------------- | ---------------------- |
-| Admin    | `admin@example.com`    | `AdminPassword123!`    |
-| Customer | `customer@example.com` | `CustomerPassword123!` |
+Follow these scenarios to demonstrate the platform during portfolio presentations or technical interviews:
 
-Use these values in the web forms or in API requests. Do not paste them as PowerShell commands.
+### Scenario 1: Customer Registration & Shopping
+1. Open **`http://localhost:3000`** in your browser.
+2. Click **Hello, Sign in** &rarr; **Create your account**.
+3. Choose the **🛒 Customer** account toggle, enter your details (password min 8 characters), and click **Register Now**.
+4. Browse products across Electronics, Mobiles, Fashion, and Food verticals. Use the search bar or category filters.
+5. Sort products using the **Featured Deals**, **Price: Low to High**, or **Avg. Customer Review** dropdown.
+6. Click **Add to Cart** or **Buy Now** on any product.
+7. Open the cart drawer, apply coupon **`AMAZON20`** (20% off) or **`FLIPKART50`** (25% off), and click **Proceed to Checkout**.
+8. Fill in shipping details and place the order.
+9. Click **Returns & Orders** in the top navigation to view the live tracking timeline (**Order Placed** &rarr; **Processing / Paid**).
+
+### Scenario 2: Admin Registration & Seller Central Management
+1. Click **🛡️ Seller Central** in the top navigation bar (or visit **`http://localhost:3000/admin`**).
+2. Switch to **Register New Admin** to create an admin account, or click **⚡ Quick Fill Seeded Admin** &rarr; **Sign In as Admin**.
+3. Inspect the **5 KPI Metric Cards**: Total Revenue, Total Orders, Active SKUs, Low Stock Alerts, and Registered Users.
+4. Go to **📦 Products & Inventory** and click **+ Add New Product**:
+   - Fill in Title, Category, SKU, Price ($), Stock Count, select a preset photo or enter an image URL, and choose a Deal Badge.
+   - Click **Publish Product**. Notice it appears immediately in the table and live on the storefront!
+5. Test adjusting stock levels with the inline **`+10`** or **`-1`** buttons.
+6. Go to **🛒 Orders & Fulfillment**:
+   - Filter orders by `ALL`, `PENDING`, `PAID`, or `SHIPPED`.
+   - Advance the customer's order from `PAID` to `SHIPPED` using the fulfillment dropdown.
+7. Go to **👥 Users & Admins**:
+   - View the live directory of registered customers and administrators with role badges and registration dates.
+
+### Seed Accounts (Pre-configured)
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@example.com` | `AdminPassword123!` |
+| **Customer** | `customer@example.com` | `CustomerPassword123!` |
+
+---
 
 ## API Overview
 
 Base URL: `http://localhost:4000/api/v1`
 
 Authentication uses:
-
 ```text
 Authorization: Bearer <accessToken>
 ```
 
 ### Authentication
-
 ```text
-POST   /auth/register
+POST   /auth/register    (accepts role: "CUSTOMER" | "ADMIN", min 8 char password)
 POST   /auth/login
 GET    /auth/me
 POST   /auth/refresh
 POST   /auth/logout
 ```
 
-### Public catalog
+### User Management (Admin Only)
+```text
+GET    /users            (returns all registered customers and admins)
+GET    /users/:id
+```
 
+### Public Catalog
 ```text
 GET    /products
 GET    /products/:slug
+GET    /products/categories
 ```
 
-### Customer cart
-
-All cart endpoints require authentication.
-
+### Customer Cart
 ```text
 GET    /cart/me
 POST   /cart/items
@@ -254,8 +295,7 @@ DELETE /cart/items/:itemId
 DELETE /cart/items
 ```
 
-### Customer orders
-
+### Customer Orders
 ```text
 POST   /orders/checkout
 GET    /orders/me
@@ -263,10 +303,7 @@ GET    /orders/me/:id
 POST   /orders/me/:id/cancel
 ```
 
-### Admin orders
-
-All admin order endpoints require an authenticated `ADMIN` user.
-
+### Admin Order Operations
 ```text
 GET    /orders/admin
 GET    /orders/admin/:id
@@ -274,13 +311,10 @@ PATCH  /orders/admin/:id/status
 ```
 
 ### Payments
-
 ```text
 POST   /payments/orders/:orderId/intent
 POST   /payments/webhook
 ```
-
-The webhook route receives the raw request body before JSON parsing so provider signatures can be verified.
 
 ### Admin catalog and inventory
 

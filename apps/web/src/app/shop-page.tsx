@@ -15,8 +15,12 @@ import {
 } from "../lib/api";
 
 const COUPON_CODES: Record<string, number> = {
-  AMAZON20: 0.2,
+  NAMMAKARNATAKA: 0.25,
+  BENGALURU50: 0.25,
+  KAVERI20: 0.2,
+  MYSURU15: 0.15,
   FLIPKART50: 0.25,
+  AMAZON20: 0.2,
   SAVE20: 0.2,
   WELCOME10: 0.1
 };
@@ -48,16 +52,19 @@ export function ShopPage() {
   // Form states
   const [email, setEmail] = useState("customer@example.com");
   const [password, setPassword] = useState("CustomerPassword123!");
-  const [firstName, setFirstName] = useState("Alex");
-  const [lastName, setLastName] = useState("Kumar");
-  const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountRate: number } | null>(null);
-  const [deliveryPincode, setDeliveryPincode] = useState("New Delhi 110001");
+  const [firstName, setFirstName] = useState("Rahul");
+  const [lastName, setLastName] = useState("Gowda");
+  const [couponInput, setCouponInput] = useState("NAMMAKARNATAKA");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountRate: number } | null>({
+    code: "NAMMAKARNATAKA",
+    discountRate: 0.25
+  });
+  const [deliveryPincode, setDeliveryPincode] = useState("Indiranagar, Bengaluru - 560038");
 
   // Checkout address & payment
-  const [shippingName, setShippingName] = useState("Alex Kumar");
-  const [shippingAddress, setShippingAddress] = useState("42 Silicon Enclave, Tech District");
-  const [shippingCity, setShippingCity] = useState("New Delhi");
+  const [shippingName, setShippingName] = useState("Rahul Gowda");
+  const [shippingAddress, setShippingAddress] = useState("#14, 100 Feet Road, HAL 2nd Stage, Indiranagar");
+  const [shippingCity, setShippingCity] = useState("Bengaluru, Karnataka - 560038");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("upi");
 
   const [message, setMessage] = useState("Connecting to live e-commerce catalog...");
@@ -106,7 +113,7 @@ export function ShopPage() {
 
   const deliveryFee = useMemo(() => {
     if (!cart?.items.length) return 0;
-    return cartSubtotal >= 5000 ? 0 : 499; // Free delivery over $50.00
+    return cartSubtotal >= 49900 ? 0 : 4000; // Free delivery over ₹499 (₹40 standard delivery fee)
   }, [cart, cartSubtotal]);
 
   const discountAmount = useMemo(() => {
@@ -366,10 +373,13 @@ export function ShopPage() {
           <div
             className="amz-location-picker"
             onClick={() => {
-              const newPin = prompt("Enter delivery location or pin code:", deliveryPincode);
+              const newPin = prompt(
+                "Enter delivery location or pin code (e.g. Indiranagar, Bengaluru - 560038 / Koramangala 560034 / Mysuru 570001 / Mangaluru 575001 / Hubballi 580020):",
+                deliveryPincode
+              );
               if (newPin) setDeliveryPincode(newPin);
             }}
-            title="Click to change location"
+            title="Click to change delivery location"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
@@ -390,16 +400,16 @@ export function ShopPage() {
               aria-label="Select category"
             >
               <option value="all">All Departments</option>
-              <option value="electronics">Electronics</option>
-              <option value="mobiles">Mobiles</option>
-              <option value="fashion">Fashion</option>
-              <option value="food-delivery">Food & Groceries</option>
+              <option value="electronics">Electronics & Gadgets</option>
+              <option value="mobiles">Mobiles & Tablets</option>
+              <option value="fashion">Karnataka Handlooms & Fashion</option>
+              <option value="food-delivery">Namma Food & Groceries (15m)</option>
             </select>
             <input
               className="amz-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Amazon, Flipkart deals, laptops, pizzas, sneakers..."
+              placeholder="Search Amazon & Flipkart deals, Mysore silk sarees, Coorg coffee, Masala dosa, iPhone 16..."
               aria-label="Search products"
             />
             <button type="submit" className="amz-search-btn" aria-label="Search button">
@@ -490,7 +500,7 @@ export function ShopPage() {
               setShowOrdersView(false);
             }}
           >
-            Electronics & Laptops
+            Electronics & Gadgets
           </button>
           <button
             className={`amz-subnav-pill ${selectedCategory === "mobiles" ? "active" : ""}`}
@@ -499,7 +509,7 @@ export function ShopPage() {
               setShowOrdersView(false);
             }}
           >
-            Mobiles & Tech
+            Mobiles & Tablets
           </button>
           <button
             className={`amz-subnav-pill ${selectedCategory === "fashion" ? "active" : ""}`}
@@ -508,7 +518,7 @@ export function ShopPage() {
               setShowOrdersView(false);
             }}
           >
-            Fashion & Apparel
+            🥻 Karnataka Handlooms & Fashion
           </button>
           <button
             className={`amz-subnav-pill ${selectedCategory === "food-delivery" ? "active" : ""}`}
@@ -517,7 +527,7 @@ export function ShopPage() {
               setShowOrdersView(false);
             }}
           >
-            🍕 Food & Groceries (15m Delivery)
+            ☕ Namma Food & Groceries (15m Delivery)
           </button>
           <Link href="/admin" className="amz-subnav-pill" style={{ marginLeft: "auto", textDecoration: "none" }}>
             ⚙️ Admin Console
@@ -525,29 +535,29 @@ export function ShopPage() {
         </nav>
       </header>
 
-      {/* 2. HERO PROMOTIONAL BANNER (AMAZON GREAT INDIAN FESTIVAL / FLIPKART BIG BILLION DAYS) */}
+      {/* 2. HERO PROMOTIONAL BANNER (NAMMA KARNATAKA FESTIVAL) */}
       {!showOrdersView && (
         <section className="amz-hero-banner">
           <div className="amz-hero-content">
             <div>
-              <div className="amz-hero-tag">🔥 Mega Festival Deals • Up to 60% Off</div>
-              <h1 className="amz-hero-title">Supercharge Your Shopping & Food Delivery</h1>
+              <div className="amz-hero-tag">🔥 Namma Karnataka Mega Utsav • Up to 70% Off Across Bengaluru & Mysuru</div>
+              <h1 className="amz-hero-title">Instant 15-Min Delivery & Karnataka Specialties</h1>
               <p className="amz-hero-subtitle">
-                High-concurrency microservices backend with Node.js, Express, PostgreSQL, Redis distributed locks, and
-                RabbitMQ event-driven decoupling.
+                Pure Mysore Silk Sarees, Coorg Single-Estate Coffee, Bengaluru Masala Dosa, and Top Tech Gadgets.
+                Powered by Node.js, PostgreSQL, Redis locks, and RabbitMQ.
               </p>
               <div className="amz-hero-highlights">
                 <div className="amz-highlight-card">
                   <strong>⚡ 15 Mins</strong>
-                  <span>Instant Delivery for Food & Gourmet</span>
+                  <span>Instant Blinkit/Swiggy Speed across Bengaluru & Mysuru</span>
                 </div>
                 <div className="amz-highlight-card">
-                  <strong>🏷️ FLIPKART50</strong>
+                  <strong>🏷️ NAMMAKARNATAKA</strong>
                   <span>Use Coupon for 25% Off Cart</span>
                 </div>
                 <div className="amz-highlight-card">
                   <strong>🛡️ Prime Assured</strong>
-                  <span>Zero-Overselling Redis Lock</span>
+                  <span>GI Tagged Handlooms & Brand Warranty</span>
                 </div>
               </div>
             </div>
@@ -561,7 +571,7 @@ export function ShopPage() {
                     <span className="badge">{item.badge ?? "Special Deal"}</span>
                     <h4>{item.name.slice(0, 30)}...</h4>
                     <strong style={{ fontSize: "14px", color: "#b12704" }}>
-                      {formatMoney(item.inventoryItems[0]?.priceCents ?? 0, "USD")}
+                      {formatMoney(item.inventoryItems[0]?.priceCents ?? 0, "INR")}
                     </strong>
                   </div>
                 </div>
@@ -833,10 +843,10 @@ export function ShopPage() {
                       {/* Pricing */}
                       <div className="amz-card-price-row">
                         <span className="amz-price-main">
-                          {formatMoney(priceCents, inventoryItem?.currency ?? "USD")}
+                          {formatMoney(priceCents, inventoryItem?.currency ?? "INR")}
                         </span>
                         <span className="amz-price-original">
-                          {formatMoney(origPriceCents, inventoryItem?.currency ?? "USD")}
+                          {formatMoney(origPriceCents, inventoryItem?.currency ?? "INR")}
                         </span>
                         <span className="amz-price-discount">{discountPercent}% OFF</span>
                       </div>
@@ -956,21 +966,21 @@ export function ShopPage() {
                 <div className="amz-bill-summary">
                   <div className="amz-bill-row">
                     <span>Subtotal</span>
-                    <span>{formatMoney(cartSubtotal, "USD")}</span>
+                    <span>{formatMoney(cartSubtotal, "INR")}</span>
                   </div>
                   <div className="amz-bill-row">
                     <span>Delivery Fee</span>
-                    <span>{deliveryFee === 0 ? "FREE" : formatMoney(deliveryFee, "USD")}</span>
+                    <span>{deliveryFee === 0 ? "FREE" : formatMoney(deliveryFee, "INR")}</span>
                   </div>
                   {appliedCoupon && (
                     <div className="amz-bill-row discount">
                       <span>Discount ({appliedCoupon.code})</span>
-                      <span>-{formatMoney(discountAmount, "USD")}</span>
+                      <span>-{formatMoney(discountAmount, "INR")}</span>
                     </div>
                   )}
                   <div className="amz-bill-row total">
                     <span>Total Amount</span>
-                    <span>{formatMoney(cartTotal, "USD")}</span>
+                    <span>{formatMoney(cartTotal, "INR")}</span>
                   </div>
                 </div>
 
@@ -982,7 +992,7 @@ export function ShopPage() {
                   }}
                   disabled={loading || !cart?.items.length}
                 >
-                  Proceed to Checkout ({formatMoney(cartTotal, "USD")})
+                  Proceed to Checkout ({formatMoney(cartTotal, "INR")})
                 </button>
               </div>
             ) : null}
@@ -1004,7 +1014,7 @@ export function ShopPage() {
             <div className="amz-modal-body">
               {/* Shipping Details */}
               <div>
-                <h4 style={{ margin: "0 0 10px 0" }}>1. Shipping Address</h4>
+                <h4 style={{ margin: "0 0 10px 0" }}>1. Shipping Address (Karnataka)</h4>
                 <div className="amz-form-group" style={{ marginBottom: "10px" }}>
                   <label>Full Name</label>
                   <input value={shippingName} onChange={(e) => setShippingName(e.target.value)} />
@@ -1015,11 +1025,11 @@ export function ShopPage() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <div className="amz-form-group">
-                    <label>City</label>
+                    <label>City & State</label>
                     <input value={shippingCity} onChange={(e) => setShippingCity(e.target.value)} />
                   </div>
                   <div className="amz-form-group">
-                    <label>Pincode / Zip</label>
+                    <label>Pincode / Postal Code</label>
                     <input value={deliveryPincode} onChange={(e) => setDeliveryPincode(e.target.value)} />
                   </div>
                 </div>
@@ -1033,19 +1043,19 @@ export function ShopPage() {
                     className={`amz-payment-chip ${paymentMethod === "upi" ? "selected" : ""}`}
                     onClick={() => setPaymentMethod("upi")}
                   >
-                    📱 UPI / QR (Instant)
+                    📱 UPI / QR (PhonePe, GPay, Paytm)
                   </div>
                   <div
                     className={`amz-payment-chip ${paymentMethod === "card" ? "selected" : ""}`}
                     onClick={() => setPaymentMethod("card")}
                   >
-                    💳 Credit / Debit Card
+                    💳 RuPay / Debit / Credit Card
                   </div>
                   <div
                     className={`amz-payment-chip ${paymentMethod === "cod" ? "selected" : ""}`}
                     onClick={() => setPaymentMethod("cod")}
                   >
-                    💵 Cash on Delivery
+                    💵 Cash on Delivery (Doorstep)
                   </div>
                 </div>
               </div>
@@ -1061,17 +1071,17 @@ export function ShopPage() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                   <span>Items Total ({cartItemCount})</span>
-                  <span>{formatMoney(cartSubtotal, "USD")}</span>
+                  <span>{formatMoney(cartSubtotal, "INR")}</span>
                 </div>
                 {appliedCoupon && (
                   <div style={{ display: "flex", justifyContent: "space-between", color: "#388e3c", marginBottom: "6px" }}>
                     <span>Coupon ({appliedCoupon.code})</span>
-                    <span>-{formatMoney(discountAmount, "USD")}</span>
+                    <span>-{formatMoney(discountAmount, "INR")}</span>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: "15px" }}>
                   <span>Grand Total</span>
-                  <span>{formatMoney(cartTotal, "USD")}</span>
+                  <span>{formatMoney(cartTotal, "INR")}</span>
                 </div>
               </div>
             </div>
@@ -1086,7 +1096,7 @@ export function ShopPage() {
                 onClick={handleCheckout}
                 disabled={loading}
               >
-                {loading ? "Processing..." : `Place Order (${formatMoney(cartTotal, "USD")})`}
+                {loading ? "Processing..." : `Place Order (${formatMoney(cartTotal, "INR")})`}
               </button>
             </div>
           </div>
@@ -1122,7 +1132,7 @@ export function ShopPage() {
                     <span className="amz-review-count">({selectedProduct.reviewCount ?? 1200} reviews)</span>
                   </div>
                   <div className="amz-price-main" style={{ margin: "10px 0" }}>
-                    {formatMoney(selectedProduct.inventoryItems[0]?.priceCents ?? 0, "USD")}
+                    {formatMoney(selectedProduct.inventoryItems[0]?.priceCents ?? 0, "INR")}
                   </div>
                   <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {selectedProduct.description}

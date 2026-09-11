@@ -39,7 +39,7 @@ export class CheckoutService {
             throw new EmptyCartError(input.userId);
           }
 
-          const currency = cart.items[0]?.inventoryItem.currency ?? "USD";
+          const currency = cart.items[0]?.inventoryItem.currency ?? "INR";
           const totalCents = cart.items.reduce(
             (sum, item) => sum + item.inventoryItem.priceCents * item.quantity,
             0

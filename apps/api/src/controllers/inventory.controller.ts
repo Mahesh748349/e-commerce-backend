@@ -8,7 +8,7 @@ const inventoryCreateSchema = z.object({
   sku: z.string().min(2).max(80),
   stockCount: z.number().int().nonnegative(),
   priceCents: z.number().int().positive(),
-  currency: z.string().length(3).default("USD"),
+  currency: z.string().length(3).default("INR"),
   attributes: z.record(z.unknown()).optional()
 });
 
