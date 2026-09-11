@@ -20,7 +20,7 @@ export const authenticate: RequestHandler = (req, _res, next) => {
       role: payload.role
     };
     next();
-  } catch (error) {
+  } catch {
     next(new AppError("Invalid or expired token", StatusCodes.UNAUTHORIZED, "INVALID_TOKEN"));
   }
 };

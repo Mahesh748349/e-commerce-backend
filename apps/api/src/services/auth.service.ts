@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { Role } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { AppError } from "../errors/app-error.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../lib/jwt.js";

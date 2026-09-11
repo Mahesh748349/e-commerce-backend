@@ -15,71 +15,179 @@ type DemoStore = {
   orders: AdminOrder[];
 };
 
-const hoodieInventory: InventoryItem = {
-  id: "11111111-1111-4111-8111-111111111111",
-  sku: "HOODIE-BLK-M",
-  stockCount: 25,
-  priceCents: 6999,
+const createInventory = (id: string, sku: string, stock: number, price: number, attr: Record<string, unknown> = {}): InventoryItem => ({
+  id,
+  sku,
+  stockCount: stock,
+  priceCents: price,
   currency: "USD",
-  attributes: { color: "Black", size: "M" }
-};
+  attributes: attr
+});
 
-const earbudsInventory: InventoryItem = {
-  id: "22222222-2222-4222-8222-222222222222",
-  sku: "EARBUDS-WHT-STD",
-  stockCount: 40,
-  priceCents: 12999,
-  currency: "USD",
-  attributes: { color: "White" }
-};
-
-const sneakersInventory: InventoryItem = {
-  id: "33333333-3333-4333-8333-333333333333",
-  sku: "SNEAKER-GRN-9",
-  stockCount: 18,
-  priceCents: 8999,
-  currency: "USD",
-  attributes: { color: "Green", size: "9" }
-};
+export const demoCategories: Category[] = [
+  { id: "cat-all", name: "All Categories", slug: "all", description: "All products", parentId: null },
+  { id: "cat-electronics", name: "Electronics", slug: "electronics", description: "Laptops, audio, and gadgets", parentId: null },
+  { id: "cat-mobiles", name: "Mobiles & Tablets", slug: "mobiles", description: "Smartphones and tablets", parentId: null },
+  { id: "cat-fashion", name: "Fashion & Apparel", slug: "fashion", description: "Clothing, footwear, and accessories", parentId: null },
+  { id: "cat-food", name: "Food & Groceries", slug: "food-delivery", description: "Instant food delivery and gourmet meals", parentId: null }
+];
 
 export const demoProducts: Product[] = [
   {
-    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-    name: "Premium Hoodie",
-    slug: "premium-hoodie",
-    description: "Heavyweight cotton hoodie with a relaxed fit.",
-    inventoryItems: [hoodieInventory]
+    id: "prod-1",
+    name: "Apple MacBook Pro 14\" M3 Max",
+    slug: "apple-macbook-pro-14",
+    description: "Lightning-fast Apple M3 chip, 18GB Unified Memory, Liquid Retina XDR display, up to 22h battery life.",
+    category: "Electronics",
+    rating: 4.9,
+    reviewCount: 1420,
+    badge: "Prime Assured",
+    originalPriceCents: 169900,
+    imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-1", "MBP14-M3-SLV", 14, 149900, { color: "Space Gray", storage: "512GB" })]
   },
   {
-    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-    name: "Wireless Earbuds",
-    slug: "wireless-earbuds",
-    description: "Compact earbuds with active noise cancellation.",
-    inventoryItems: [earbudsInventory]
+    id: "prod-2",
+    name: "Sony WH-1000XM5 Wireless ANC Headphones",
+    slug: "sony-wh-1000xm5",
+    description: "Industry-leading noise canceling with two processors, 8 microphones, and ultra-comfortable lightweight design.",
+    category: "Electronics",
+    rating: 4.8,
+    reviewCount: 2150,
+    badge: "Best Seller",
+    originalPriceCents: 39900,
+    imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-2", "SONY-XM5-BLK", 28, 34900, { color: "Midnight Black" })]
   },
   {
-    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-    name: "Runner Sneakers",
-    slug: "runner-sneakers",
-    description: "Lightweight everyday sneakers with breathable mesh.",
-    inventoryItems: [sneakersInventory]
-  }
-];
-
-const demoCategories: Category[] = [
-  {
-    id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    name: "Apparel",
-    slug: "apparel",
-    description: "Everyday clothing and accessories",
-    parentId: null
+    id: "prod-3",
+    name: "Apple iPhone 16 Pro Max 256GB",
+    slug: "iphone-16-pro-max",
+    description: "Grade 5 Titanium design, A18 Pro chip, 48MP Fusion camera system with 5x Telephoto zoom.",
+    category: "Mobiles & Tablets",
+    rating: 4.9,
+    reviewCount: 3480,
+    badge: "Deal of the Day",
+    originalPriceCents: 129900,
+    imageUrl: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-3", "IP16P-MAX-256", 20, 119900, { color: "Natural Titanium" })]
   },
   {
-    id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
-    name: "Electronics",
-    slug: "electronics",
-    description: "Devices and accessories",
-    parentId: null
+    id: "prod-4",
+    name: "Samsung Galaxy S24 Ultra AI Edition",
+    slug: "samsung-s24-ultra",
+    description: "200MP camera, built-in S Pen, Snapdragon 8 Gen 3 for Galaxy, and Galaxy AI photo assist.",
+    category: "Mobiles & Tablets",
+    rating: 4.7,
+    reviewCount: 1890,
+    badge: "Limited Offer",
+    originalPriceCents: 124900,
+    imageUrl: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-4", "S24U-512-TI", 15, 109900, { color: "Titanium Gray" })]
+  },
+  {
+    id: "prod-5",
+    name: "Ultra AMOLED Smartwatch Series 9",
+    slug: "ultra-smartwatch-9",
+    description: "Always-On Retina display, ECG monitor, blood oxygen tracking, water resistant to 50 meters.",
+    category: "Electronics",
+    rating: 4.6,
+    reviewCount: 940,
+    badge: "30% OFF",
+    originalPriceCents: 39900,
+    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-5", "WATCH-S9-45", 35, 29900, { size: "45mm", band: "Ocean Blue" })]
+  },
+  {
+    id: "prod-6",
+    name: "Heavyweight Fleece Streetwear Hoodie",
+    slug: "heavyweight-streetwear-hoodie",
+    description: "450 GSM French Terry cotton hoodie with reinforced ribbed cuffs, kangaroo pocket, and drop-shoulder fit.",
+    category: "Fashion & Apparel",
+    rating: 4.6,
+    reviewCount: 620,
+    badge: "Trending",
+    originalPriceCents: 9999,
+    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-6", "HOODIE-BLK-L", 42, 6999, { size: "L", color: "Onyx Black" })]
+  },
+  {
+    id: "prod-7",
+    name: "Nike Air Zoom Athletic Running Sneakers",
+    slug: "nike-air-zoom-running",
+    description: "Responsive Zoom Air cushioning, breathable engineered mesh upper, and high-traction rubber waffle outsole.",
+    category: "Fashion & Apparel",
+    rating: 4.8,
+    reviewCount: 2840,
+    badge: "Best Seller",
+    originalPriceCents: 16000,
+    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-7", "NIKE-ZOOM-RED-10", 25, 12900, { size: "US 10", color: "Crimson Red" })]
+  },
+  {
+    id: "prod-8",
+    name: "Italian Truffle & Mushroom Artisan Pizza",
+    slug: "italian-truffle-artisan-pizza",
+    description: "Fresh wood-fired 12\" sourdough crust topped with San Marzano tomatoes, fresh buffalo mozzarella, and black truffle oil.",
+    category: "Food & Groceries",
+    rating: 4.9,
+    reviewCount: 1450,
+    badge: "⚡ 20m Delivery",
+    originalPriceCents: 2699,
+    imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-8", "FOOD-PIZZA-TRUF", 50, 2199, { size: "12 inch", crust: "Sourdough" })]
+  },
+  {
+    id: "prod-9",
+    name: "Royal Hyderabadi Mutton Dum Biryani",
+    slug: "royal-hyderabadi-dum-biryani",
+    description: "Slow-cooked aromatic basmati rice layered with tender spiced mutton, caramelized onions, saffron, and fresh mint. Served with Mirchi ka Salan & Raita.",
+    category: "Food & Groceries",
+    rating: 4.9,
+    reviewCount: 3200,
+    badge: "Swiggy Top Pick",
+    originalPriceCents: 3200,
+    imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-9", "FOOD-BIRYANI-HYD", 60, 2499, { portion: "Serves 2-3" })]
+  },
+  {
+    id: "prod-10",
+    name: "Gourmet Double Angus Cheeseburger",
+    slug: "gourmet-double-angus-burger",
+    description: "Double 100% prime Angus beef patties, aged cheddar, crisp lettuce, house brioche bun, and hand-cut truffle parmesan fries.",
+    category: "Food & Groceries",
+    rating: 4.7,
+    reviewCount: 890,
+    badge: "⚡ Quick Bite",
+    originalPriceCents: 2199,
+    imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-10", "FOOD-BURGER-ANGUS", 45, 1699, { sides: "Truffle Fries" })]
+  },
+  {
+    id: "prod-11",
+    name: "Mechanical Tactile Gaming Keyboard RGB",
+    slug: "rgb-mechanical-gaming-keyboard",
+    description: "Hot-swappable brown switches, per-key RGB backlighting, sound-dampening gasket mount, and aluminum frame.",
+    category: "Electronics",
+    rating: 4.7,
+    reviewCount: 710,
+    badge: "Top Rated",
+    originalPriceCents: 11999,
+    imageUrl: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-11", "KB-MECH-RGB-BRN", 30, 8999, { switch: "Brown Tactile" })]
+  },
+  {
+    id: "prod-12",
+    name: "Minimalist Italian Chronograph Watch",
+    slug: "minimalist-chronograph-watch",
+    description: "Surgical-grade stainless steel casing, sapphire crystal scratch-resistant glass, and genuine full-grain leather strap.",
+    category: "Fashion & Apparel",
+    rating: 4.6,
+    reviewCount: 540,
+    badge: "Amazon's Choice",
+    originalPriceCents: 22000,
+    imageUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+    inventoryItems: [createInventory("inv-12", "WATCH-CHRONO-BRN", 19, 14900, { strap: "Brown Leather" })]
   }
 ];
 
@@ -126,8 +234,8 @@ function getStore(): DemoStore {
     const parsed = JSON.parse(stored) as Partial<DemoStore>;
     return {
       cart: parsed.cart ?? { id: "demo-cart", items: [] },
-      categories: parsed.categories ?? demoCategories,
-      products: parsed.products ?? demoProducts,
+      categories: parsed.categories && parsed.categories.length >= demoCategories.length ? parsed.categories : demoCategories,
+      products: parsed.products && parsed.products.length >= demoProducts.length ? parsed.products : demoProducts,
       orders: parsed.orders ?? []
     };
   }
@@ -151,6 +259,10 @@ export const demoApi = {
 
   async products() {
     return getStore().products;
+  },
+
+  async categories() {
+    return getStore().categories;
   },
 
   async cart() {
@@ -301,6 +413,19 @@ export const demoApi = {
 
   async adminOrders() {
     return getStore().orders;
+  },
+
+  async adminUpdateOrderStatus(orderId: string, status: AdminOrder["status"]) {
+    const store = getStore();
+    const order = store.orders.find((item) => item.id === orderId);
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    order.status = status;
+    setStore(store);
+    return order;
   },
 
   async myOrders(): Promise<CustomerOrder[]> {

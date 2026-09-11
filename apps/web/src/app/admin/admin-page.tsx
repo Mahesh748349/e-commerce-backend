@@ -8,6 +8,7 @@ import {
   type AdminOrder,
   type AuthSession,
   type Category,
+  type OrderStatus,
   type Product
 } from "../../lib/api";
 
@@ -23,6 +24,8 @@ export function AdminPage() {
   const [sku, setSku] = useState("BAG-BLK-STD");
   const [stockCount, setStockCount] = useState(12);
   const [priceCents, setPriceCents] = useState(7999);
+  const [categoryId, setCategoryId] = useState("");
+  const [productId, setProductId] = useState("");
   const [message, setMessage] = useState("Sign in with the seeded admin account.");
   const [loading, setLoading] = useState(false);
 
@@ -56,9 +59,11 @@ export function AdminPage() {
       api.adminOrders(accessToken)
     ]);
 
-    setCategories(nextCategories);
-    setProducts(nextProducts);
-    setOrders(nextOrders);
+      setCategories(nextCategories);
+      setProducts(nextProducts);
+      setOrders(nextOrders);
+      setCategoryId((current) => current || nextCategories[0]?.id || "");
+      setProductId((current) => current || nextProducts[0]?.id || "");
   }
 
   async function createCategory() {
@@ -86,7 +91,6 @@ export function AdminPage() {
       return;
     }
 
-    const categoryId = categories[0]?.id;
     if (!categoryId) {
       setMessage("Create or load a category before creating products.");
       return;
@@ -114,7 +118,6 @@ export function AdminPage() {
       return;
     }
 
-    const productId = products[0]?.id;
     if (!productId) {
       setMessage("Create or load a product before creating inventory.");
       return;
@@ -133,6 +136,23 @@ export function AdminPage() {
       setMessage("Inventory SKU created in PostgreSQL.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create inventory.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateOrderStatus(orderId: string, status: OrderStatus) {
+    if (!session) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.adminUpdateOrderStatus(session.tokens.accessToken, orderId, status);
+      await refreshAdminData();
+      setMessage(`Order ${orderId.slice(0, 8)} updated to ${status}.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to update order status.");
     } finally {
       setLoading(false);
     }
@@ -185,6 +205,14 @@ export function AdminPage() {
         <article className="admin-panel">
           <h2>Create Product</h2>
           <input value={productName} onChange={(event) => setProductName(event.target.value)} />
+          <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} aria-label="Product category">
+            <option value="">Choose a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
           <button onClick={createProduct} disabled={loading || !session}>
             Create product
           </button>
@@ -192,6 +220,14 @@ export function AdminPage() {
 
         <article className="admin-panel">
           <h2>Create Inventory</h2>
+          <select value={productId} onChange={(event) => setProductId(event.target.value)} aria-label="Inventory product">
+            <option value="">Choose a product</option>
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+              </option>
+            ))}
+          </select>
           <input value={sku} onChange={(event) => setSku(event.target.value)} />
           <input
             value={stockCount}
@@ -249,6 +285,18 @@ export function AdminPage() {
             <strong>{order.status}</strong>
             <span>{order.items.length} lines</span>
             <span>{formatMoney(order.totalCents, order.currency)}</span>
+            <select
+              value={order.status}
+              onChange={(event) => updateOrderStatus(order.id, event.target.value as OrderStatus)}
+              disabled={loading || order.status === "CANCELLED"}
+              aria-label={`Update status for order ${order.id}`}
+            >
+              {(["PENDING", "PAID", "SHIPPED", "CANCELLED", "FAILED"] as OrderStatus[]).map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
           </div>
         ))}
       </section>

@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { AppError } from "../errors/app-error.js";
 import { prisma } from "../lib/prisma.js";
 import { OrderRepository } from "../repositories/order.repository.js";
+import { rabbitMQ } from "../events/rabbitmq.js";
 
 export class OrderService {
   private readonly orderRepository = new OrderRepository();
@@ -83,7 +84,7 @@ export class OrderService {
   }
 
   async cancelMine(id: string, userId: string) {
-    return prisma.$transaction(
+    const result = await prisma.$transaction(
       async (tx) => {
         const order = await tx.order.findFirst({
           where: { id, userId },
@@ -119,5 +120,8 @@ export class OrderService {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable
       }
     );
+
+    void rabbitMQ.publish("order.cancelled", { orderId: id, userId });
+    return result;
   }
 }

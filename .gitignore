@@ -6,6 +6,9 @@ coverage
 .env.*
 !.env.example
 *.log
+.*.log
+*.tsbuildinfo
+
 Dockerfile.local
 postgres-data
 redis-data

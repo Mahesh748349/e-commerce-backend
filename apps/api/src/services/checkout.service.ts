@@ -5,6 +5,7 @@ import { logger } from "../lib/logger.js";
 import { prisma } from "../lib/prisma.js";
 import { RedisLockManager, type RedisLock } from "../lib/redis-lock.js";
 import { enqueueOrderPlacedJob } from "../queues/orderQueue.js";
+import { rabbitMQ } from "../events/rabbitmq.js";
 
 export type CheckoutInput = {
   userId: string;
@@ -102,6 +103,14 @@ export class CheckoutService {
         await enqueueOrderPlacedJob({
           orderId: order.id,
           userId: input.userId,
+          paymentProvider: input.paymentProvider
+        });
+
+        await rabbitMQ.publish("order.created", {
+          orderId: order.id,
+          userId: input.userId,
+          totalCents: order.totalCents,
+          currency: order.currency,
           paymentProvider: input.paymentProvider
         });
       } catch (error) {

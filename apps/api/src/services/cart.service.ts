@@ -28,10 +28,14 @@ export class CartService {
       throw new AppError("Inventory item not found", StatusCodes.NOT_FOUND, "INVENTORY_NOT_FOUND");
     }
 
-    if (inventoryItem.stockCount < input.quantity) {
+    const cart = await this.getMine(input.userId);
+    const existingItem = cart.items.find((item) => item.inventoryItemId === input.inventoryItemId);
+    const requestedQuantity = (existingItem?.quantity ?? 0) + input.quantity;
+
+    if (inventoryItem.stockCount < requestedQuantity) {
       throw new AppError("Requested quantity is not available", StatusCodes.CONFLICT, "OUT_OF_STOCK", {
         sku: inventoryItem.sku,
-        requested: input.quantity,
+        requested: requestedQuantity,
         available: inventoryItem.stockCount
       });
     }
@@ -48,6 +52,21 @@ export class CartService {
   async updateItemQuantity(input: { userId: string; cartItemId: string; quantity: number }) {
     if (input.quantity < 1) {
       return this.cartRepository.removeItem(input);
+    }
+
+    const cart = await this.getMine(input.userId);
+    const cartItem = cart.items.find((item) => item.id === input.cartItemId);
+
+    if (!cartItem) {
+      throw new AppError("Cart item not found", StatusCodes.NOT_FOUND, "CART_ITEM_NOT_FOUND");
+    }
+
+    if (cartItem.inventoryItem.stockCount < input.quantity) {
+      throw new AppError("Requested quantity is not available", StatusCodes.CONFLICT, "OUT_OF_STOCK", {
+        sku: cartItem.inventoryItem.sku,
+        requested: input.quantity,
+        available: cartItem.inventoryItem.stockCount
+      });
     }
 
     return this.cartRepository.updateItemQuantity(input);

@@ -4,7 +4,9 @@ import { ZodError } from "zod";
 import { AppError } from "../errors/app-error.js";
 import { logger } from "../lib/logger.js";
 
-export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
+export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+  // Express recognizes error middleware by its four-argument signature.
+  void next;
   if (error instanceof ZodError) {
     res.status(StatusCodes.BAD_REQUEST).json({
       error: {

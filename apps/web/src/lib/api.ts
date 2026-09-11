@@ -3,12 +3,31 @@ import { demoApi } from "./demo-api";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
+export function isDemoModeActive(): boolean {
+  if (DEMO_MODE) return true;
+  if (typeof window !== "undefined") {
+    return window.localStorage.getItem("use_demo_mode") === "true";
+  }
+  return false;
+}
+
+export function setDemoModeActive(enable: boolean): void {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("use_demo_mode", enable ? "true" : "false");
+  }
+}
+
 type ApiEnvelope<T> = {
   data: T;
   meta?: Record<string, unknown>;
 };
 
-type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "CANCELLED" | "FAILED";
+type ApiError = {
+  error?: string | { message?: string };
+  message?: string;
+};
+
+export type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "CANCELLED" | "FAILED";
 
 export type InventoryItem = {
   id: string;
@@ -25,6 +44,12 @@ export type Product = {
   slug: string;
   description: string | null;
   inventoryItems: InventoryItem[];
+  imageUrl?: string;
+  category?: string;
+  rating?: number;
+  reviewCount?: number;
+  badge?: string;
+  originalPriceCents?: number;
 };
 
 export type Cart = {
@@ -104,14 +129,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     return undefined as T;
   }
 
-  const body = (await response.json()) as ApiEnvelope<T> | { message?: string; error?: string };
+  const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T> | ApiError;
 
   if (!response.ok) {
     const message =
       "message" in body && body.message
         ? body.message
-        : "error" in body && body.error
+        : "error" in body && typeof body.error === "string"
           ? body.error
+          : "error" in body && body.error && typeof body.error === "object" && body.error.message
+            ? body.error.message
           : `Request failed with status ${response.status}`;
     throw new Error(message);
   }
@@ -121,7 +148,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const api = {
   login(email: string, password: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.login(email);
     }
 
@@ -132,7 +159,7 @@ export const api = {
   },
 
   register(input: { email: string; password: string; firstName?: string; lastName?: string }) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.login(input.email);
     }
 
@@ -143,15 +170,32 @@ export const api = {
   },
 
   products() {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.products();
     }
 
-    return request<Product[]>("/api/v1/products");
+    return request<Array<Product & { category?: { name?: string } | string }>>("/api/v1/products").then(
+      (prods) =>
+        prods.map((p) => ({
+          ...p,
+          category:
+            p.category && typeof p.category === "object"
+              ? (p.category as { name?: string }).name ?? undefined
+              : (p.category as string | undefined)
+        }))
+    );
+  },
+
+  categories() {
+    if (isDemoModeActive()) {
+      return demoApi.categories();
+    }
+
+    return request<Category[]>("/api/v1/products/categories").catch(() => demoApi.categories());
   },
 
   cart(accessToken: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.cart();
     }
 
@@ -161,7 +205,7 @@ export const api = {
   },
 
   addCartItem(accessToken: string, inventoryItemId: string, quantity: number) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.addCartItem(accessToken, inventoryItemId, quantity);
     }
 
@@ -173,7 +217,7 @@ export const api = {
   },
 
   updateCartItem(accessToken: string, cartItemId: string, quantity: number) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.updateCartItem(accessToken, cartItemId, quantity);
     }
 
@@ -185,7 +229,7 @@ export const api = {
   },
 
   checkout(accessToken: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.checkout();
     }
 
@@ -197,7 +241,7 @@ export const api = {
   },
 
   createPaymentIntent(accessToken: string, orderId: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.createPaymentIntent(accessToken, orderId);
     }
 
@@ -212,7 +256,7 @@ export const api = {
   },
 
   myOrders(accessToken: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.myOrders();
     }
 
@@ -222,7 +266,7 @@ export const api = {
   },
 
   cancelOrder(accessToken: string, orderId: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.cancelOrder(orderId);
     }
 
@@ -233,7 +277,7 @@ export const api = {
   },
 
   adminCategories(accessToken: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.adminCategories();
     }
 
@@ -243,7 +287,7 @@ export const api = {
   },
 
   adminCreateCategory(accessToken: string, input: { name: string; description?: string }) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.adminCreateCategory(accessToken, input);
     }
 
@@ -258,7 +302,7 @@ export const api = {
     accessToken: string,
     input: { categoryId: string; name: string; description?: string; isActive?: boolean }
   ) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.adminCreateProduct(accessToken, input);
     }
 
@@ -279,7 +323,7 @@ export const api = {
       currency: string;
     }
   ) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.adminCreateInventory(accessToken, input);
     }
 
@@ -291,12 +335,24 @@ export const api = {
   },
 
   adminOrders(accessToken: string) {
-    if (DEMO_MODE) {
+    if (isDemoModeActive()) {
       return demoApi.adminOrders();
     }
 
     return request<AdminOrder[]>("/api/v1/orders/admin", {
       headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  },
+
+  adminUpdateOrderStatus(accessToken: string, orderId: string, status: OrderStatus) {
+    if (isDemoModeActive()) {
+      return demoApi.adminUpdateOrderStatus(orderId, status);
+    }
+
+    return request<AdminOrder>(`/api/v1/orders/admin/${orderId}/status`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ status })
     });
   }
 };
