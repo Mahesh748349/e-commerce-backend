@@ -202,15 +202,23 @@ export class PaymentService {
   }) {
     const providerOrderId = `${input.provider}_demo_${input.order.id.slice(0, 8)}`;
 
-    await prisma.transaction.update({
-      where: { id: input.transaction.id },
-      data: {
-        provider: input.provider,
-        providerOrderId,
-        stripePaymentIntentId: input.provider === "stripe" ? providerOrderId : undefined,
-        status: PaymentStatus.REQUIRES_CONFIRMATION
-      }
-    });
+    await prisma.$transaction([
+      prisma.transaction.update({
+        where: { id: input.transaction.id },
+        data: {
+          provider: input.provider,
+          providerOrderId,
+          stripePaymentIntentId: input.provider === "stripe" ? providerOrderId : undefined,
+          status: PaymentStatus.SUCCEEDED
+        }
+      }),
+      prisma.order.update({
+        where: { id: input.order.id },
+        data: {
+          status: OrderStatus.PAID
+        }
+      })
+    ]);
 
     return {
       provider: input.provider,

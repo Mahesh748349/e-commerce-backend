@@ -5,9 +5,10 @@ import { validateRequest } from "../middleware/validate-request.js";
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(12).max(128),
+  password: z.string().min(8).max(128),
   firstName: z.string().min(1).max(80).optional(),
-  lastName: z.string().min(1).max(80).optional()
+  lastName: z.string().min(1).max(80).optional(),
+  role: z.enum(["CUSTOMER", "ADMIN"]).optional().default("CUSTOMER")
 });
 
 const loginSchema = z.object({

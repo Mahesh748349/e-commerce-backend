@@ -1,11 +1,12 @@
 import { prisma } from "../lib/prisma.js";
 
 export class UserRepository {
-  createCustomer(input: {
+  createUser(input: {
     email: string;
     passwordHash: string;
     firstName?: string;
     lastName?: string;
+    role?: "CUSTOMER" | "ADMIN";
   }) {
     return prisma.user.create({
       data: {
@@ -13,7 +14,7 @@ export class UserRepository {
         passwordHash: input.passwordHash,
         firstName: input.firstName,
         lastName: input.lastName,
-        role: "CUSTOMER",
+        role: input.role ?? "CUSTOMER",
         cart: {
           create: {}
         }
@@ -25,6 +26,31 @@ export class UserRepository {
         lastName: true,
         role: true
       }
+    });
+  }
+
+  createCustomer(input: {
+    email: string;
+    passwordHash: string;
+    firstName?: string;
+    lastName?: string;
+  }) {
+    return this.createUser({ ...input, role: "CUSTOMER" });
+  }
+
+  findAllUsers() {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: { createdAt: "desc" }
     });
   }
 

@@ -39,6 +39,8 @@ export function ShopPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [registerRole, setRegisterRole] = useState<"CUSTOMER" | "ADMIN">("CUSTOMER");
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showOrdersView, setShowOrdersView] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
@@ -66,9 +68,9 @@ export function ShopPage() {
     setIsDemo(isDemoModeActive());
   }, []);
 
-  // Filter products by search and category
+  // Filter & Sort products
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    const list = products.filter((product) => {
       const matchesCategory =
         selectedCategory === "all" ||
         (product.category && product.category.toLowerCase().includes(selectedCategory.toLowerCase())) ||
@@ -79,7 +81,19 @@ export function ShopPage() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [products, selectedCategory, activeQuery]);
+
+    if (sortBy === "price-asc") {
+      return [...list].sort((a, b) => (a.inventoryItems[0]?.priceCents ?? 0) - (b.inventoryItems[0]?.priceCents ?? 0));
+    }
+    if (sortBy === "price-desc") {
+      return [...list].sort((a, b) => (b.inventoryItems[0]?.priceCents ?? 0) - (a.inventoryItems[0]?.priceCents ?? 0));
+    }
+    if (sortBy === "rating") {
+      return [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    }
+
+    return list;
+  }, [products, selectedCategory, activeQuery, sortBy]);
 
   // Cart calculations
   const cartSubtotal = useMemo(() => {
@@ -198,13 +212,18 @@ export function ShopPage() {
         email,
         password,
         firstName,
-        lastName
+        lastName,
+        role: registerRole
       });
       setSession(nextSession);
       window.localStorage.setItem("session", JSON.stringify(nextSession));
       await refreshCustomerData(nextSession.tokens.accessToken);
       setIsAuthOpen(false);
-      setMessage(`Registered and signed in as ${nextSession.user.email}`);
+      setMessage(
+        registerRole === "ADMIN"
+          ? `🎉 Registered as Admin (${nextSession.user.email})! You can manage the catalog in Seller Central.`
+          : `🎉 Registered and signed in as ${nextSession.user.email}!`
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Registration failed.");
     } finally {
@@ -401,6 +420,19 @@ export function ShopPage() {
             >
               <span>{isDemo ? "🟠 Demo Mode" : "🟢 Live API"}</span>
             </div>
+
+            {/* Seller Central / Admin Link */}
+            <Link
+              href="/admin"
+              className="amz-nav-item"
+              style={{ textDecoration: "none", color: "#ffa41c" }}
+              title="Access Admin Console & Seller Central"
+            >
+              <span className="nav-line1" style={{ color: "#ffa41c" }}>Admin Portal</span>
+              <span className="nav-line2" style={{ color: "#ffffff", display: "flex", alignItems: "center", gap: "4px" }}>
+                🛡️ Seller Central
+              </span>
+            </Link>
 
             {/* Account & Lists */}
             {session ? (
@@ -711,7 +743,20 @@ export function ShopPage() {
                 </span>
               </h2>
 
-              <div className="amz-category-pills">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <select
+                  className="amz-sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  aria-label="Sort products by"
+                >
+                  <option value="featured">✨ Featured Deals</option>
+                  <option value="price-asc">💵 Price: Low to High</option>
+                  <option value="price-desc">💎 Price: High to Low</option>
+                  <option value="rating">⭐ Avg. Customer Review</option>
+                </select>
+
+                <div className="amz-category-pills">
                 <button
                   className={`amz-pill-btn ${selectedCategory === "all" ? "active" : ""}`}
                   onClick={() => setSelectedCategory("all")}
@@ -744,6 +789,7 @@ export function ShopPage() {
                 </button>
               </div>
             </div>
+          </div>
 
             <div className="amz-products-grid">
               {filteredProducts.map((product) => {
@@ -1128,16 +1174,35 @@ export function ShopPage() {
 
             <div className="amz-modal-body">
               {authMode === "register" && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  <div className="amz-form-group">
-                    <label>First Name</label>
-                    <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                <>
+                  <div className="amz-role-selector" style={{ marginBottom: "14px" }}>
+                    <button
+                      type="button"
+                      className={`amz-role-btn ${registerRole === "CUSTOMER" ? "active" : ""}`}
+                      onClick={() => setRegisterRole("CUSTOMER")}
+                    >
+                      🛒 Customer
+                    </button>
+                    <button
+                      type="button"
+                      className={`amz-role-btn ${registerRole === "ADMIN" ? "active" : ""}`}
+                      onClick={() => setRegisterRole("ADMIN")}
+                    >
+                      🛡️ Store Admin
+                    </button>
                   </div>
-                  <div className="amz-form-group">
-                    <label>Last Name</label>
-                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div className="amz-form-group">
+                      <label>First Name</label>
+                      <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    </div>
+                    <div className="amz-form-group">
+                      <label>Last Name</label>
+                      <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               <div className="amz-form-group">
@@ -1146,7 +1211,7 @@ export function ShopPage() {
               </div>
 
               <div className="amz-form-group">
-                <label>Password</label>
+                <label>Password (min 8 characters)</label>
                 <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
               </div>
 
@@ -1156,7 +1221,7 @@ export function ShopPage() {
                 onClick={authMode === "login" ? handleLogin : handleRegister}
                 disabled={loading}
               >
-                {loading ? "Please wait..." : authMode === "login" ? "Sign In" : "Register Now"}
+                {loading ? "Please wait..." : authMode === "login" ? "Sign In" : `Register as ${registerRole === "ADMIN" ? "Admin" : "Customer"}`}
               </button>
 
               <div style={{ textAlign: "center", fontSize: "13px", marginTop: "12px" }}>

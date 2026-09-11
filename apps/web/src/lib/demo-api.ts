@@ -1,5 +1,6 @@
 import type {
   AdminOrder,
+  AdminUser,
   AuthSession,
   Cart,
   Category,
@@ -13,6 +14,7 @@ type DemoStore = {
   categories: Category[];
   products: Product[];
   orders: AdminOrder[];
+  users: AdminUser[];
 };
 
 const createInventory = (id: string, sku: string, stock: number, price: number, attr: Record<string, unknown> = {}): InventoryItem => ({
@@ -191,33 +193,26 @@ export const demoProducts: Product[] = [
   }
 ];
 
-const demoSession: AuthSession = {
-  user: {
-    id: "99999999-9999-4999-8999-999999999999",
-    email: "customer@example.com",
-    firstName: "Customer",
-    lastName: "User",
-    role: "CUSTOMER"
-  },
-  tokens: {
-    accessToken: "demo-access-token",
-    refreshToken: "demo-refresh-token"
-  }
-};
-
-const demoAdminSession: AuthSession = {
-  user: {
+export const defaultDemoUsers: AdminUser[] = [
+  {
     id: "88888888-8888-4888-8888-888888888888",
     email: "admin@example.com",
     firstName: "Admin",
     lastName: "User",
-    role: "ADMIN"
+    role: "ADMIN",
+    isActive: true,
+    createdAt: new Date().toISOString()
   },
-  tokens: {
-    accessToken: "demo-admin-access-token",
-    refreshToken: "demo-admin-refresh-token"
+  {
+    id: "99999999-9999-4999-8999-999999999999",
+    email: "customer@example.com",
+    firstName: "Customer",
+    lastName: "User",
+    role: "CUSTOMER",
+    isActive: true,
+    createdAt: new Date().toISOString()
   }
-};
+];
 
 function getStore(): DemoStore {
   if (typeof window === "undefined") {
@@ -225,36 +220,127 @@ function getStore(): DemoStore {
       cart: { id: "demo-cart", items: [] },
       categories: demoCategories,
       products: demoProducts,
-      orders: []
+      orders: [],
+      users: defaultDemoUsers
     };
   }
 
   const stored = window.localStorage.getItem("demo-store");
   if (stored) {
-    const parsed = JSON.parse(stored) as Partial<DemoStore>;
-    return {
-      cart: parsed.cart ?? { id: "demo-cart", items: [] },
-      categories: parsed.categories && parsed.categories.length >= demoCategories.length ? parsed.categories : demoCategories,
-      products: parsed.products && parsed.products.length >= demoProducts.length ? parsed.products : demoProducts,
-      orders: parsed.orders ?? []
-    };
+    try {
+      const parsed = JSON.parse(stored) as Partial<DemoStore>;
+      return {
+        cart: parsed.cart ?? { id: "demo-cart", items: [] },
+        categories: parsed.categories && parsed.categories.length >= demoCategories.length ? parsed.categories : demoCategories,
+        products: parsed.products && parsed.products.length >= demoProducts.length ? parsed.products : demoProducts,
+        orders: parsed.orders ?? [],
+        users: parsed.users && parsed.users.length ? parsed.users : defaultDemoUsers
+      };
+    } catch {
+      // ignore
+    }
   }
 
   return {
     cart: { id: "demo-cart", items: [] },
     categories: demoCategories,
     products: demoProducts,
-    orders: []
+    orders: [],
+    users: defaultDemoUsers
   };
 }
 
 function setStore(store: DemoStore) {
-  window.localStorage.setItem("demo-store", JSON.stringify(store));
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("demo-store", JSON.stringify(store));
+  }
 }
 
 export const demoApi = {
-  async login(email?: string) {
-    return email === "admin@example.com" ? demoAdminSession : demoSession;
+  async register(input: { email: string; password?: string; firstName?: string; lastName?: string; role?: "CUSTOMER" | "ADMIN" }): Promise<AuthSession> {
+    const store = getStore();
+    const role = input.role ?? "CUSTOMER";
+    const existing = store.users.find((u) => u.email.toLowerCase() === input.email.toLowerCase());
+    const newUser: AdminUser = existing ?? {
+      id: crypto.randomUUID(),
+      email: input.email.toLowerCase(),
+      firstName: input.firstName ?? null,
+      lastName: input.lastName ?? null,
+      role,
+      isActive: true,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!existing) {
+      store.users.unshift(newUser);
+      setStore(store);
+    }
+
+    return {
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role
+      },
+      tokens: {
+        accessToken: `demo-${newUser.role.toLowerCase()}-${newUser.id}`,
+        refreshToken: `demo-refresh-${newUser.id}`
+      }
+    };
+  },
+
+  async login(email?: string): Promise<AuthSession> {
+    const store = getStore();
+    const cleanEmail = email?.toLowerCase();
+    const found = store.users.find((u) => u.email.toLowerCase() === cleanEmail);
+
+    if (found) {
+      return {
+        user: {
+          id: found.id,
+          email: found.email,
+          firstName: found.firstName,
+          lastName: found.lastName,
+          role: found.role
+        },
+        tokens: {
+          accessToken: `demo-${found.role.toLowerCase()}-${found.id}`,
+          refreshToken: `demo-refresh-${found.id}`
+        }
+      };
+    }
+
+    if (cleanEmail === "admin@example.com") {
+      return {
+        user: {
+          id: "88888888-8888-4888-8888-888888888888",
+          email: "admin@example.com",
+          firstName: "Admin",
+          lastName: "User",
+          role: "ADMIN"
+        },
+        tokens: {
+          accessToken: "demo-admin-access-token",
+          refreshToken: "demo-admin-refresh-token"
+        }
+      };
+    }
+
+    return {
+      user: {
+        id: "99999999-9999-4999-8999-999999999999",
+        email: cleanEmail ?? "customer@example.com",
+        firstName: "Customer",
+        lastName: "User",
+        role: "CUSTOMER"
+      },
+      tokens: {
+        accessToken: "demo-access-token",
+        refreshToken: "demo-refresh-token"
+      }
+    };
   },
 
   async products() {
@@ -320,9 +406,9 @@ export const demoApi = {
       0
     );
 
-    store.orders.push({
+    store.orders.unshift({
       id: orderId,
-      status: "PENDING",
+      status: "PAID",
       totalCents,
       currency: "USD",
       createdAt: new Date().toISOString(),
@@ -348,6 +434,10 @@ export const demoApi = {
     };
   },
 
+  async adminUsers(): Promise<AdminUser[]> {
+    return getStore().users;
+  },
+
   async adminCategories() {
     return getStore().categories;
   },
@@ -366,6 +456,12 @@ export const demoApi = {
     return category;
   },
 
+  async adminDeleteCategory(_accessToken: string, categoryId: string) {
+    const store = getStore();
+    store.categories = store.categories.filter((c) => c.id !== categoryId);
+    setStore(store);
+  },
+
   async adminCreateProduct(
     _accessToken: string,
     input: { categoryId: string; name: string; description?: string; isActive?: boolean }
@@ -381,6 +477,62 @@ export const demoApi = {
     store.products.unshift(product);
     setStore(store);
     return product;
+  },
+
+  async adminCreateFullProduct(
+    _accessToken: string,
+    input: {
+      categoryId: string;
+      name: string;
+      description?: string;
+      sku: string;
+      stockCount: number;
+      priceCents: number;
+      imageUrl?: string;
+      badge?: string;
+    }
+  ): Promise<Product> {
+    const store = getStore();
+    const category = store.categories.find((c) => c.id === input.categoryId);
+    const categoryName = category?.name ?? "General";
+    const productId = crypto.randomUUID();
+    const inventoryId = crypto.randomUUID();
+
+    const inventoryItem: InventoryItem = {
+      id: inventoryId,
+      sku: input.sku,
+      stockCount: input.stockCount,
+      priceCents: input.priceCents,
+      currency: "USD",
+      attributes: {
+        imageUrl: input.imageUrl,
+        badge: input.badge
+      }
+    };
+
+    const newProduct: Product = {
+      id: productId,
+      name: input.name,
+      slug: `${input.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}-${Date.now().toString().slice(-4)}`,
+      description: input.description ?? `${input.name} available at Amazon & Flipkart Supermart.`,
+      category: categoryName,
+      rating: 4.8,
+      reviewCount: 42,
+      badge: input.badge || "New Arrival",
+      originalPriceCents: Math.round(input.priceCents * 1.25),
+      imageUrl: input.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+      inventoryItems: [inventoryItem]
+    };
+
+    store.products.unshift(newProduct);
+    setStore(store);
+    return newProduct;
+  },
+
+  async adminDeleteProduct(_accessToken: string, productId: string) {
+    const store = getStore();
+    store.products = store.products.filter((p) => p.id !== productId);
+    setStore(store);
   },
 
   async adminCreateInventory(
@@ -409,6 +561,28 @@ export const demoApi = {
     );
     setStore(store);
     return inventoryItem;
+  },
+
+  async adminUpdateInventory(
+    _accessToken: string,
+    inventoryItemId: string,
+    input: { stockCount?: number; priceCents?: number }
+  ) {
+    const store = getStore();
+    store.products = store.products.map((product) => ({
+      ...product,
+      inventoryItems: product.inventoryItems.map((inv) => {
+        if (inv.id === inventoryItemId) {
+          return {
+            ...inv,
+            stockCount: input.stockCount !== undefined ? input.stockCount : inv.stockCount,
+            priceCents: input.priceCents !== undefined ? input.priceCents : inv.priceCents
+          };
+        }
+        return inv;
+      })
+    }));
+    setStore(store);
   },
 
   async adminOrders() {

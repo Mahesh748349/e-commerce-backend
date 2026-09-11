@@ -102,6 +102,16 @@ export type CustomerOrder = {
   }>;
 };
 
+export type AdminUser = {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: "ADMIN" | "CUSTOMER";
+  isActive: boolean;
+  createdAt: string;
+};
+
 export type AuthSession = {
   user: {
     id: string;
@@ -115,6 +125,157 @@ export type AuthSession = {
     refreshToken: string;
   };
 };
+
+const PRODUCT_IMAGE_FALLBACKS: Record<string, { image: string; badge: string; rating: number; reviews: number }> = {
+  "apple-macbook-pro-14": {
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+    badge: "Prime Assured",
+    rating: 4.9,
+    reviews: 1420
+  },
+  "sony-wh-1000xm5": {
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+    badge: "Best Seller",
+    rating: 4.8,
+    reviews: 2150
+  },
+  "iphone-16-pro-max": {
+    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80",
+    badge: "Deal of the Day",
+    rating: 4.9,
+    reviews: 3480
+  },
+  "samsung-s24-ultra": {
+    image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80",
+    badge: "Limited Offer",
+    rating: 4.7,
+    reviews: 1890
+  },
+  "ultra-smartwatch-9": {
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+    badge: "30% OFF",
+    rating: 4.6,
+    reviews: 940
+  },
+  "heavyweight-streetwear-hoodie": {
+    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
+    badge: "Trending",
+    rating: 4.6,
+    reviews: 620
+  },
+  "nike-air-zoom-running": {
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+    badge: "Best Seller",
+    rating: 4.8,
+    reviews: 2840
+  },
+  "italian-truffle-artisan-pizza": {
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+    badge: "⚡ 20m Delivery",
+    rating: 4.9,
+    reviews: 1450
+  },
+  "royal-hyderabadi-dum-biryani": {
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    badge: "Swiggy Top Pick",
+    rating: 4.9,
+    reviews: 3200
+  },
+  "gourmet-double-angus-burger": {
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
+    badge: "⚡ Quick Bite",
+    rating: 4.7,
+    reviews: 890
+  },
+  "rgb-mechanical-gaming-keyboard": {
+    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
+    badge: "Top Rated",
+    rating: 4.7,
+    reviews: 710
+  },
+  "minimalist-chronograph-watch": {
+    image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+    badge: "Amazon's Choice",
+    rating: 4.6,
+    reviews: 540
+  },
+  "wireless-earbuds": {
+    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80",
+    badge: "Popular Pick",
+    rating: 4.7,
+    reviews: 1120
+  },
+  "premium-hoodie": {
+    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80",
+    badge: "Classic Fit",
+    rating: 4.5,
+    reviews: 480
+  }
+};
+
+function resolveProductVisuals(product: Product & { category?: { name?: string } | string }): {
+  imageUrl: string;
+  badge: string;
+  rating: number;
+  reviewCount: number;
+  originalPriceCents: number;
+} {
+  const inv = product.inventoryItems?.[0];
+  const attrs = (inv?.attributes as Record<string, unknown> | null) ?? null;
+  const price = inv?.priceCents ?? 0;
+
+  // 1. Check if explicitly saved in inventory attributes
+  if (attrs && typeof attrs.imageUrl === "string" && attrs.imageUrl.length > 5) {
+    return {
+      imageUrl: attrs.imageUrl,
+      badge: typeof attrs.badge === "string" ? attrs.badge : "Prime Assured",
+      rating: typeof attrs.rating === "number" ? attrs.rating : 4.8,
+      reviewCount: typeof attrs.reviewCount === "number" ? attrs.reviewCount : 124,
+      originalPriceCents: typeof attrs.originalPriceCents === "number" ? attrs.originalPriceCents : Math.round(price * 1.25)
+    };
+  }
+
+  // 2. Check curated slug map
+  const match = PRODUCT_IMAGE_FALLBACKS[product.slug];
+  if (match) {
+    return {
+      imageUrl: match.image,
+      badge: match.badge,
+      rating: match.rating,
+      reviewCount: match.reviews,
+      originalPriceCents: Math.round(price * 1.25)
+    };
+  }
+
+  // 3. Category fallback
+  const rawCat = product.category as unknown;
+  const catName =
+    typeof rawCat === "string"
+      ? rawCat
+    : rawCat && typeof rawCat === "object" && "name" in rawCat && typeof (rawCat as { name?: unknown }).name === "string"
+      ? ((rawCat as { name: string }).name)
+      : "";
+  const lowerCat = catName.toLowerCase();
+
+  let fallbackImage = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80";
+  if (lowerCat.includes("elect") || lowerCat.includes("gadget")) {
+    fallbackImage = "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=800&q=80";
+  } else if (lowerCat.includes("mobile") || lowerCat.includes("phone")) {
+    fallbackImage = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80";
+  } else if (lowerCat.includes("fash") || lowerCat.includes("apparel") || lowerCat.includes("cloth")) {
+    fallbackImage = "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80";
+  } else if (lowerCat.includes("food") || lowerCat.includes("grocer") || lowerCat.includes("meal")) {
+    fallbackImage = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+  }
+
+  return {
+    imageUrl: fallbackImage,
+    badge: "Amazon's Choice",
+    rating: 4.7,
+    reviewCount: 350,
+    originalPriceCents: Math.round(price * 1.25)
+  };
+}
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -158,9 +319,9 @@ export const api = {
     });
   },
 
-  register(input: { email: string; password: string; firstName?: string; lastName?: string }) {
+  register(input: { email: string; password: string; firstName?: string; lastName?: string; role?: "CUSTOMER" | "ADMIN" }) {
     if (isDemoModeActive()) {
-      return demoApi.login(input.email);
+      return demoApi.register(input);
     }
 
     return request<AuthSession>("/api/v1/auth/register", {
@@ -176,13 +337,24 @@ export const api = {
 
     return request<Array<Product & { category?: { name?: string } | string }>>("/api/v1/products").then(
       (prods) =>
-        prods.map((p) => ({
-          ...p,
-          category:
+        prods.map((p) => {
+          const category =
             p.category && typeof p.category === "object"
               ? (p.category as { name?: string }).name ?? undefined
-              : (p.category as string | undefined)
-        }))
+              : (p.category as string | undefined);
+
+          const visuals = resolveProductVisuals(p);
+
+          return {
+            ...p,
+            category,
+            imageUrl: p.imageUrl || visuals.imageUrl,
+            badge: p.badge || visuals.badge,
+            rating: p.rating || visuals.rating,
+            reviewCount: p.reviewCount || visuals.reviewCount,
+            originalPriceCents: p.originalPriceCents || visuals.originalPriceCents
+          };
+        })
     );
   },
 
@@ -276,6 +448,17 @@ export const api = {
     });
   },
 
+  // Admin APIs
+  adminUsers(accessToken: string) {
+    if (isDemoModeActive()) {
+      return demoApi.adminUsers();
+    }
+
+    return request<AdminUser[]>("/api/v1/users", {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  },
+
   adminCategories(accessToken: string) {
     if (isDemoModeActive()) {
       return demoApi.adminCategories();
@@ -298,6 +481,17 @@ export const api = {
     });
   },
 
+  adminDeleteCategory(accessToken: string, categoryId: string) {
+    if (isDemoModeActive()) {
+      return demoApi.adminDeleteCategory(accessToken, categoryId);
+    }
+
+    return request<void>(`/api/v1/catalog/admin/categories/${categoryId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  },
+
   adminCreateProduct(
     accessToken: string,
     input: { categoryId: string; name: string; description?: string; isActive?: boolean }
@@ -313,6 +507,17 @@ export const api = {
     });
   },
 
+  adminDeleteProduct(accessToken: string, productId: string) {
+    if (isDemoModeActive()) {
+      return demoApi.adminDeleteProduct(accessToken, productId);
+    }
+
+    return request<void>(`/api/v1/catalog/admin/products/${productId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  },
+
   adminCreateInventory(
     accessToken: string,
     input: {
@@ -321,6 +526,7 @@ export const api = {
       stockCount: number;
       priceCents: number;
       currency: string;
+      attributes?: Record<string, unknown>;
     }
   ) {
     if (isDemoModeActive()) {
@@ -332,6 +538,68 @@ export const api = {
       headers: { Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify(input)
     });
+  },
+
+  adminUpdateInventory(
+    accessToken: string,
+    inventoryItemId: string,
+    input: { stockCount?: number; priceCents?: number }
+  ) {
+    if (isDemoModeActive()) {
+      return demoApi.adminUpdateInventory(accessToken, inventoryItemId, input);
+    }
+
+    return request<InventoryItem>(`/api/v1/catalog/admin/inventory/${inventoryItemId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify(input)
+    });
+  },
+
+  async adminCreateFullProduct(
+    accessToken: string,
+    input: {
+      categoryId: string;
+      name: string;
+      description?: string;
+      sku: string;
+      stockCount: number;
+      priceCents: number;
+      imageUrl?: string;
+      badge?: string;
+    }
+  ): Promise<Product> {
+    if (isDemoModeActive()) {
+      return demoApi.adminCreateFullProduct(accessToken, input);
+    }
+
+    // 1. Create product in catalog
+    const product = await this.adminCreateProduct(accessToken, {
+      categoryId: input.categoryId,
+      name: input.name,
+      description: input.description,
+      isActive: true
+    });
+
+    // 2. Create inventory SKU with image & badge attributes
+    const inventory = await this.adminCreateInventory(accessToken, {
+      productId: product.id,
+      sku: input.sku,
+      stockCount: input.stockCount,
+      priceCents: input.priceCents,
+      currency: "USD",
+      attributes: {
+        imageUrl: input.imageUrl,
+        badge: input.badge
+      }
+    });
+
+    return {
+      ...product,
+      imageUrl: input.imageUrl,
+      badge: input.badge,
+      inventoryItems: [inventory]
+    };
   },
 
   adminOrders(accessToken: string) {
@@ -360,6 +628,6 @@ export const api = {
 export function formatMoney(amountCents: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency
+    currency: currency || "USD"
   }).format(amountCents / 100);
 }

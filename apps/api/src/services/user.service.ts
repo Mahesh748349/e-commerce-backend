@@ -14,4 +14,8 @@ export class UserService {
 
     return user;
   }
+
+  listAll() {
+    return this.userRepository.findAllUsers();
+  }
 }

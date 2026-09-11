@@ -12,4 +12,13 @@ export class UserController {
       next(error);
     }
   };
+
+  listAll: RequestHandler = async (_req, res, next) => {
+    try {
+      const users = await this.userService.listAll();
+      res.status(200).json({ data: users });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

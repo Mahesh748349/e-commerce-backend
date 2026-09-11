@@ -12,6 +12,7 @@ export type RegisterInput = {
   password: string;
   firstName?: string;
   lastName?: string;
+  role?: "CUSTOMER" | "ADMIN";
 };
 
 export type LoginInput = {
@@ -30,11 +31,12 @@ export class AuthService {
     }
 
     const passwordHash = await hashPassword(input.password);
-    const user = await this.userRepository.createCustomer({
+    const user = await this.userRepository.createUser({
       email: input.email.toLowerCase(),
       passwordHash,
       firstName: input.firstName,
-      lastName: input.lastName
+      lastName: input.lastName,
+      role: input.role ?? "CUSTOMER"
     });
 
     return this.issueSession(user);
