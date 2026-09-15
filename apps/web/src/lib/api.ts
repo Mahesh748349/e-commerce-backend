@@ -4,16 +4,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export function isDemoModeActive(): boolean {
-  if (DEMO_MODE) return true;
-  if (typeof window !== "undefined") {
-    return window.localStorage.getItem("use_demo_mode") === "true";
-  }
   return false;
 }
 
-export function setDemoModeActive(enable: boolean): void {
+export function setDemoModeActive(_enable: boolean): void {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem("use_demo_mode", enable ? "true" : "false");
+    window.localStorage.removeItem("use_demo_mode");
   }
 }
 
@@ -326,22 +322,56 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  login(email: string, password: string) {
-    if (isDemoModeActive()) {
-      return demoApi.login(email);
-    }
+  checkEmail(email: string) {
+    return request<{ exists: boolean; email: string; firstName?: string }>("/api/v1/auth/check-email", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  },
 
+  login(email: string, password: string) {
     return request<AuthSession>("/api/v1/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password })
     });
   },
 
-  register(input: { email: string; password: string; firstName?: string; lastName?: string; role?: "CUSTOMER" | "ADMIN" }) {
-    if (isDemoModeActive()) {
-      return demoApi.register(input);
-    }
+  sendLoginOtp(email: string) {
+    return request<{ message: string; email: string; emailSent: boolean; devOtp?: string }>("/api/v1/auth/login/send-otp", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  },
 
+  verifyLoginOtp(email: string, otp: string) {
+    return request<AuthSession>("/api/v1/auth/login/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp })
+    });
+  },
+
+  sendSignupOtp(input: { email: string; password: string; firstName?: string; lastName?: string; role?: "CUSTOMER" | "ADMIN" }) {
+    return request<{ message: string; email: string; emailSent: boolean; devOtp?: string }>("/api/v1/auth/signup/send-otp", {
+      method: "POST",
+      body: JSON.stringify(input)
+    });
+  },
+
+  verifySignupOtp(input: { email: string; otp: string }) {
+    return request<AuthSession>("/api/v1/auth/signup/verify-otp", {
+      method: "POST",
+      body: JSON.stringify(input)
+    });
+  },
+
+  googleLogin(credential: string) {
+    return request<AuthSession>("/api/v1/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential })
+    });
+  },
+
+  register(input: { email: string; password: string; firstName?: string; lastName?: string; role?: "CUSTOMER" | "ADMIN" }) {
     return request<AuthSession>("/api/v1/auth/register", {
       method: "POST",
       body: JSON.stringify(input)
@@ -418,16 +448,27 @@ export const api = {
     });
   },
 
-  checkout(accessToken: string) {
-    if (isDemoModeActive()) {
-      return demoApi.checkout();
+  checkout(
+    accessToken: string,
+    options?: {
+      paymentMethod?: string;
+      shippingAddress?: Record<string, unknown>;
+      couponCode?: string;
     }
-
-    return request<{ id: string; totalCents: number; currency: string }>("/api/v1/orders/checkout", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({ paymentProvider: "stripe" })
-    });
+  ) {
+    return request<{ id: string; totalCents: number; currency: string; status: string; paymentMethod?: string }>(
+      "/api/v1/orders/checkout",
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({
+          paymentProvider: "stripe",
+          paymentMethod: options?.paymentMethod ?? "COD",
+          shippingAddress: options?.shippingAddress,
+          couponCode: options?.couponCode
+        })
+      }
+    );
   },
 
   createPaymentIntent(accessToken: string, orderId: string) {

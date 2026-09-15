@@ -23,7 +23,13 @@ const envSchema = z.object({
   STRIPE_CURRENCY: z.string().length(3).default("usd"),
   RAZORPAY_KEY_ID: z.string(),
   RAZORPAY_KEY_SECRET: z.string(),
-  RAZORPAY_WEBHOOK_SECRET: z.string()
+  RAZORPAY_WEBHOOK_SECRET: z.string(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default("ShopSwift Support <noreply@shopswift.com>"),
+  GOOGLE_CLIENT_ID: z.string().optional()
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -9,7 +9,10 @@ import { OrderService } from "../services/order.service.js";
 
 const checkoutSchema = z.object({
   idempotencyKey: z.string().min(8).optional(),
-  paymentProvider: z.enum(["stripe", "razorpay"]).optional()
+  paymentProvider: z.enum(["stripe", "razorpay"]).optional(),
+  paymentMethod: z.string().optional(),
+  shippingAddress: z.record(z.unknown()).optional(),
+  couponCode: z.string().optional()
 });
 
 const adminListQuerySchema = z.object({

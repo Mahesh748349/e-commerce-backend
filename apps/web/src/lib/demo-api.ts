@@ -206,26 +206,7 @@ export const demoProducts: Product[] = [
   }
 ];
 
-export const defaultDemoUsers: AdminUser[] = [
-  {
-    id: "88888888-8888-4888-8888-888888888888",
-    email: "admin@example.com",
-    firstName: "Rahul",
-    lastName: "Gowda",
-    role: "ADMIN",
-    isActive: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: "99999999-9999-4999-8999-999999999999",
-    email: "customer@example.com",
-    firstName: "Priya",
-    lastName: "Sharma",
-    role: "CUSTOMER",
-    isActive: true,
-    createdAt: new Date().toISOString()
-  }
-];
+export const defaultDemoUsers: AdminUser[] = [];
 
 const DEMO_STORE_STORAGE_KEY = "demo-store-v3-karnataka";
 
@@ -310,56 +291,8 @@ export const demoApi = {
     };
   },
 
-  async login(email?: string): Promise<AuthSession> {
-    const store = getStore();
-    const cleanEmail = email?.toLowerCase();
-    const found = store.users.find((u) => u.email.toLowerCase() === cleanEmail);
-
-    if (found) {
-      return {
-        user: {
-          id: found.id,
-          email: found.email,
-          firstName: found.firstName,
-          lastName: found.lastName,
-          role: found.role
-        },
-        tokens: {
-          accessToken: `demo-${found.role.toLowerCase()}-${found.id}`,
-          refreshToken: `demo-refresh-${found.id}`
-        }
-      };
-    }
-
-    if (cleanEmail === "admin@example.com") {
-      return {
-        user: {
-          id: "88888888-8888-4888-8888-888888888888",
-          email: "admin@example.com",
-          firstName: "Admin",
-          lastName: "User",
-          role: "ADMIN"
-        },
-        tokens: {
-          accessToken: "demo-admin-access-token",
-          refreshToken: "demo-admin-refresh-token"
-        }
-      };
-    }
-
-    return {
-      user: {
-        id: "99999999-9999-4999-8999-999999999999",
-        email: cleanEmail ?? "customer@example.com",
-        firstName: "Customer",
-        lastName: "User",
-        role: "CUSTOMER"
-      },
-      tokens: {
-        accessToken: "demo-access-token",
-        refreshToken: "demo-refresh-token"
-      }
-    };
+  async login(_email?: string): Promise<AuthSession> {
+    throw new Error("Demo login is disabled. Please sign in or create an account with real authentication.");
   },
 
   async products() {

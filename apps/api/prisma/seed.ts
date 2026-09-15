@@ -8,41 +8,7 @@ config();
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPasswordHash = await hashPassword("AdminPassword123!");
-  const customerPasswordHash = await hashPassword("CustomerPassword123!");
-
-  await prisma.user.upsert({
-    where: { email: "admin@example.com" },
-    update: {
-      firstName: "Rahul",
-      lastName: "Gowda"
-    },
-    create: {
-      email: "admin@example.com",
-      passwordHash: adminPasswordHash,
-      firstName: "Rahul",
-      lastName: "Gowda",
-      role: Role.ADMIN
-    }
-  });
-
-  await prisma.user.upsert({
-    where: { email: "customer@example.com" },
-    update: {
-      firstName: "Priya",
-      lastName: "Sharma"
-    },
-    create: {
-      email: "customer@example.com",
-      passwordHash: customerPasswordHash,
-      firstName: "Priya",
-      lastName: "Sharma",
-      role: Role.CUSTOMER,
-      cart: {
-        create: {}
-      }
-    }
-  });
+  // Only seed authentic categories, products, and inventory items. Real users create accounts via Amazon-style signup.
 
   const apparel = await prisma.category.upsert({
     where: { slug: "fashion" },

@@ -11,6 +11,9 @@ export type CheckoutInput = {
   userId: string;
   idempotencyKey?: string;
   paymentProvider?: "stripe" | "razorpay";
+  paymentMethod?: string;
+  shippingAddress?: Record<string, unknown>;
+  couponCode?: string;
 };
 
 export class CheckoutService {
@@ -45,12 +48,18 @@ export class CheckoutService {
             0
           );
 
+          const rawMethod = (input.paymentMethod || "COD").toUpperCase();
+          const paymentMethod = ["COD", "UPI", "CARD"].includes(rawMethod) ? rawMethod : "COD";
+          const initialStatus = paymentMethod === "COD" ? OrderStatus.PENDING : OrderStatus.PAID;
+
           const order = await tx.order.create({
             data: {
               userId: input.userId,
-              status: OrderStatus.PENDING,
+              status: initialStatus,
               totalCents,
               currency,
+              shippingAddress: input.shippingAddress ? (input.shippingAddress as Prisma.InputJsonValue) : undefined,
+              paymentMethod,
               items: {
                 create: cart.items.map((item) => ({
                   productId: item.productId,
@@ -81,9 +90,11 @@ export class CheckoutService {
               orderId: order.id,
               userId: input.userId,
               type: TransactionType.PAYMENT,
-              status: PaymentStatus.PROCESSING,
+              status: paymentMethod === "COD" ? PaymentStatus.PROCESSING : PaymentStatus.SUCCEEDED,
               amountCents: totalCents,
               currency,
+              provider: paymentMethod,
+              providerOrderId: `${paymentMethod.toLowerCase()}_${order.id.slice(0, 8)}`,
               idempotencyKey: input.idempotencyKey ?? randomUUID()
             }
           });

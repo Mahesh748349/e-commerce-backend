@@ -75,7 +75,10 @@ export class UserRepository {
       where: { email },
       select: {
         id: true,
-        email: true
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true
       }
     });
   }
